@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <title>MAISCAN</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="../static/assets/img/maiscan.png" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="../static/css/styles.css" rel="stylesheet" />
+    
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+            <div class="container">
+                <a class="navbar-brand" href="#page-top"><img src="../static/assets/img/mais-logo.png" alt="">MAISCAN</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars ms-1"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#scan">Scan</a></li>
+                        <!--<li class="nav-item"><a class="nav-link" href="#portfolio">Diseases</a></li>-->
+                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container">
+                <div class="masthead-subheading">Welcome to</div>
+                <div class="masthead-heading text-uppercase">MAISCAN</div>
+                <a class="btn btn-primary btn-xl text-uppercase" href="#scan">SCAN</a>
+            </div>
+        </header>
+
+        <section>
+            <form action="/predict" method="post" enctype="multipart/form-data">
+                <input type="file" name="image" accept="image/*" capture="user">
+                <input type="file" name="video" accept="video/*" capture="environment">
+                <input type="file" accept="image/*" capture>
+                <input type="submit" value="Upload">
+                </form>
+                
+                <canvas></canvas>
+        </section>
+
+        <section class="page-section bg-light" id="scan">
+            <div class="container">
+            <div class="text-center">
+                <h2 class="section-heading text-uppercase">Detect Leaf Disease</h2>
+                <h3 class="section-subheading text-muted">Upload an image or Capture a picture of Corn Leaf</h3>
+                
+                <div id="radio-buttons">
+                    <input type="radio" id="file-upload" name="upload-option" value="file" checked>
+                    <label for="file-upload">File Upload</label>
+                    <input type="radio" id="camera-upload" name="upload-option" value="camera">
+                    <label for="camera-upload">Camera</label>
+                </div>
+                <br>
+    
+                <form action="/predict" method="post" enctype="multipart/form-data" onsubmit="showloading()" id="upload-form">
+                    <input type="file" name="image" class="upload" id="image-upload">
+                    <input type="file" name="image" accept="image/*" capture="user">
+                    <input type="submit" value="Predict">
+                    <br>
+                    
+                </form>
+    
+                <form action="/predict" method="post" enctype="multipart/form-data" onsubmit="showloading()" id="camera-form" style="display: none;">
+                    <video id="camera-stream" autoplay></video>
+                    <br>
+                    <div class="shutter-ctn">
+                        <button id="shutter" class="shutter">Take Picture</button>
+                        <input type="submit" id="predict-button" value="Predict" style="display: none;">
+                    </div>
+                    <!--<br>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div class="col-md-4" id="gallery-view">
+                        <img data-index="0" src="" alt="...">
+                        
+                    </div>-->
+                </form>
+                <br>
+                <div id="preview-container">
+                    <h6>Image Preview</h6>
+                    <img id="image-preview" src="" alt="">
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="../static/js/scripts.js"></script>
+        <script src="../static/js/camera.js"></script>
+        
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script>
+            var input = document.querySelector('input[type=file]'); // see Example 4
+
+            input.onchange = function () {
+            var file = input.files[0];
+
+            upload(file);
+            drawOnCanvas(file);   // see Example 6
+            displayAsImage(file); // see Example 7
+            };
+
+            function upload(file) {
+            var form = new FormData(),
+                xhr = new XMLHttpRequest();
+
+            form.append('image', file);
+            xhr.open('post', 'server.php', true);
+            xhr.send(form);
+            }
+
+            function drawOnCanvas(file) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                var dataURL = e.target.result,
+                    c = document.querySelector('canvas'), // see Example 4
+                    ctx = c.getContext('2d'),
+                    img = new Image();
+
+                img.onload = function() {
+                c.width = img.width;
+                c.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                };
+
+                img.src = dataURL;
+            };
+
+            reader.readAsDataURL(file);
+            }
+
+            function displayAsImage(file) {
+            var imgURL = URL.createObjectURL(file),
+                img = document.createElement('img');
+
+            img.onload = function() {
+                URL.revokeObjectURL(imgURL);
+            };
+
+            img.src = imgURL;
+            document.body.appendChild(img);
+            }
+
+            // HOYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYy
+
+            // JavaScript Section
+document.addEventListener("DOMContentLoaded", function() {
+    var cameraUpload = document.getElementById("camera-upload");
+    var fileUpload = document.getElementById("file-upload");
+    var uploadForm = document.getElementById("upload-form");
+    var cameraForm = document.getElementById("camera-form");
+    var cameraStream = document.getElementById("camera-stream");
+    var shutterButton = document.getElementById("shutter");
+    var canvas = document.getElementById("canvas");
+    var predictButton = document.getElementById("predict-button");
+
+    cameraUpload.addEventListener("change", function() {
+        if (this.checked) {
+            cameraForm.style.display = "block";
+            uploadForm.style.display = "none";
+            startCamera();
+        }
+    });
+
+    fileUpload.addEventListener("change", function() {
+        if (this.checked) {
+            uploadForm.style.display = "block";
+            cameraForm.style.display = "none";
+            stopCamera();
+        }
+    });
+
+    shutterButton.addEventListener("click", function() {
+        takePicture();
+        predictButton.style.display = "inline-block";
+    });
+
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                cameraStream.srcObject = stream;
+            })
+            .catch(function(err) {
+                console.log("An error occurred: " + err);
+            });
+    }
+
+    function stopCamera() {
+        if (cameraStream.srcObject) {
+            cameraStream.srcObject.getTracks().forEach(function(track) {
+                track.stop();
+            });
+        }
+    }
+
+    function takePicture() {
+        var context = canvas.getContext("2d");
+        canvas.width = cameraStream.videoWidth;
+        canvas.height = cameraStream.videoHeight;
+        context.drawImage(cameraStream, 0, 0, canvas.width, canvas.height);
+        var imageDataURL = canvas.toDataURL("image/png");
+        document.getElementById("image-preview").src = imageDataURL;
+    }
+});
+
+// const cameraVideoStream = document.getElementById('camera-stream');
+const shutterButton = document.getElementById('shutter');
+const canvas = document.getElementById('canvas');
+
+let width = 480;
+let height = 720;
+let streaming = false;
+
+// Function to initialize camera stream
+function initializeCameraStream() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                cameraVideoStream.srcObject = stream;
+                cameraVideoStream.play();
+            })
+            .catch((error) => {
+                console.error('Error accessing camera:', error);
+            });
+    } else {
+        console.error('getUserMedia is not supported');
+    }
+}
+
+// Event listener for camera radio button
+document.getElementById('camera-upload').addEventListener('change', () => {
+    if (document.getElementById('camera-upload').checked) {
+        initializeCameraStream();
+    }
+});
+
+cameraVideoStream.addEventListener('canplay', (ev) => {
+    if (!streaming) {
+        height = cameraVideoStream.videoHeight / (cameraVideoStream.videoWidth / width);
+
+        canvas.setAttribute('width', width);
+        canvas.setAttribute('height', height);
+        cameraVideoStream.setAttribute('width', width);
+        cameraVideoStream.setAttribute('height', height);
+        streaming = true;
+    }
+}, false);
+
+// Capture snapshots using HTML Canvas
+function captureImage() {
+  const canvasContext = canvas.getContext('2d');
+  canvas.width = width;
+  canvas.height = height;
+  canvasContext.drawImage(cameraVideoStream, 0, 0, width, height);
+
+  // Hide canvas
+  canvas.style.display = 'none';
+
+  // Show image preview
+  const data = canvas.toDataURL('image/png');
+  document.getElementById('image-preview').src = data;
+}
+
+// Add click listener to shutter button to capture image and submit the form
+shutterButton.addEventListener('click', () => {
+  captureImage();
+  // Show image preview after capturing
+  document.getElementById('preview-container').style.display = 'block';
+  
+  // Submit the form
+  document.getElementById('camera-form').submit();
+});
+
+        </script>
+    </body>
+</html>

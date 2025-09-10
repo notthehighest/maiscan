@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <title>MAISCAN</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="../static/assets/img/mais-logo.png" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="../static/css/styles.css" rel="stylesheet" />
+
+        <style>
+            .upload {
+                background-color: #fff;
+                border: 1px solid black;
+                padding: 10px;
+                border-radius: 5px;
+                margin-right: 10px;
+            }
+            .predict-btn {
+                background-color: #ffc800;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            #image-preview {
+            max-width: 100%;
+            max-height: 400px;
+            }
+            canvas {
+            display: none;
+            }
+            button {
+            border: 0;
+            outline: none;
+            background: #00000070;
+            color: #FFFFFF;
+            padding: 4px 8px;
+            height: 30px;
+            min-width: 30px;
+            border-radius: 24px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            }
+            .camera-ctn {
+            position: relative;
+            background: #000000;
+            }
+            .camera-view video {
+            height: 100vh;
+            width: 100vw;
+            object-fit: cover;
+            transform: scaleX(-1);
+            }
+            .camera-bottom {
+            height: 250px;
+            background: #00000050;
+            position: absolute;
+            inset: 0;
+            top: auto;
+            padding: 0 5%;
+            display: grid;
+            place-items: center;
+            }
+            .camera-bottom > .inner {
+            display: grid;
+            place-items: center;
+            max-width: 500px;
+            }
+
+            /* SHUTTER CONTAINER */
+            .shutter-ctn {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            width: 100%;
+            }
+            .shutter {
+            height: 80px;
+            width: 80px;
+            background: #f0e400;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+            }
+            .shutter:active {
+            transform: scale(0.8);
+            }
+            .switch-device {
+            height: 55px;
+            width: 55px;
+            border-radius: 50%;
+            }
+
+        </style>
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+            <div class="container">
+                <a class="navbar-brand" href="#page-top"><img src="../static/assets/img/mais-logo.png" alt="">MAISCAN</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars ms-1"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#scan">Scan</a></li>
+                        <!--<li class="nav-item"><a class="nav-link" href="#portfolio">Diseases</a></li>-->
+                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container">
+                <div class="masthead-subheading">Welcome to</div>
+                <div class="masthead-heading text-uppercase">MAISCAN</div>
+                <a class="btn btn-primary btn-xl text-uppercase" href="#scan">SCAN</a>
+            </div>
+        </header>
+        <!-- Services-->
+        <section class="page-section" id="services">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Services</h2>
+                    <h3 class="section-subheading text-muted">We will help you identify and provide solutions for your Corn Leaf Diseases.</h3>
+                </div>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <span class="fa-stack fa-4x">
+                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                            <i class="fas fa-leaf fa-stack-1x fa-inverse"></i>
+                        </span>
+                        <h4 class="my-3">Corn Leaf Disease Identication</h4>
+                        <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="fa-stack fa-4x">
+                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                            <i class="fas fa-file fa-stack-1x fa-inverse"></i>
+                        </span>
+                        <h4 class="my-3">Corn Leaf Disease Prevention</h4>
+                        <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="fa-stack fa-4x">
+                            <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                            <i class="fas fa-camera fa-stack-1x fa-inverse"></i>
+                        </span>
+                        <h4 class="my-3" >Upload or Capture Corn Leaf</h4>
+                        <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima maxime quam architecto quo inventore harum ex magni, dicta impedit.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-section bg-light" id="scan">
+        <div class="container">
+        <div class="text-center">
+            <h2 class="section-heading text-uppercase">Detect Leaf Disease</h2>
+            <h3 class="section-subheading text-muted">Upload an image or Capture a picture of Corn Leaf</h3>
+            
+            <div id="radio-buttons">
+                <input type="radio" id="file-upload" name="upload-option" value="file" checked>
+                <label for="file-upload">File Upload</label>
+                <input type="radio" id="camera-upload" name="upload-option" value="camera">
+                <label for="camera-upload">Camera</label>
+            </div>
+            <br>
+
+            <form action="/predict" method="post" enctype="multipart/form-data" onsubmit="showloading()" id="upload-form">
+                <input type="file" name="image" class="upload" id="image-upload">
+                <input type="file" name="image" accept="image/*" capture="user">
+                <input type="submit" value="Predict">
+                <br>
+                
+            </form>
+
+            <form action="/predict" method="post" enctype="multipart/form-data" onsubmit="showloading()" id="camera-form" style="display: none;">
+                <video id="camera-stream" autoplay></video>
+                <br>
+                <div class="shutter-ctn">
+                    <button id="shutter" class="shutter">Take Picture</button>
+                    <input type="submit" id="predict-button" value="Predict" style="display: none;">
+                </div>
+                <!--<br>
+                <canvas id="canvas" style="display: none;"></canvas>
+                <div class="col-md-4" id="gallery-view">
+                    <img data-index="0" src="" alt="...">
+                    
+                </div>-->
+            </form>
+            <br>
+            <div id="preview-container">
+                <h6>Image Preview</h6>
+                <img id="image-preview" src="" alt="">
+            </div>
+        </div>
+    </div>
+</section>
+
+        <!-- Portfolio Grid-->
+        <section class="page-section" id="portfolio">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Corn Leaf Disease</h2>
+                    <h3 class="section-subheading text-muted">These are the different types of leaf disease of a corn. However, this are just few of the diseases and will be limited to three types of diseases. We have trained 3 types of disease and a healthy leaf of a corn.</h3>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6 mb-4">
+                        <!-- Portfolio item 1-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal1">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="../static/assets/img/blight.jpg" alt="corn blight" />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Blight</div>
+                                <div class="portfolio-caption-subheading text-muted">Disease</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 mb-4">
+                        <!-- Portfolio item 2-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal2">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="../static/assets/img/spot.jpg" alt="corn leaf spot" />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Leaf Spot</div>
+                                <div class="portfolio-caption-subheading text-muted">Disease</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 mb-4">
+                        <!-- Portfolio item 3-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal3">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="../static/assets/img/rust.jpg" alt="corn common rust" />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Common Rust</div>
+                                <div class="portfolio-caption-subheading text-muted">Disease</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 mb-4">
+                        <!-- Portfolio item 4-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal4">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="../static/assets/img/healthy.jpg" alt="corn healthy" />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">No Disease</div>
+                                <div class="portfolio-caption-subheading text-muted">Healthy</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--<div class="col-lg-4 col-sm-6 mb-4 mb-sm-0">
+                        
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal5">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="assets/img/portfolio/5.jpg" alt="..." />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Southwest</div>
+                                <div class="portfolio-caption-subheading text-muted">Website Design</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal6">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="assets/img/portfolio/6.jpg" alt="..." />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Window</div>
+                                <div class="portfolio-caption-subheading text-muted">Photography</div>
+                            </div>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+        </section>
+        <!-- About-->
+        <section class="page-section bg-light" id="about">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">About</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <ul class="timeline">
+                    <li>
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="../static/assets/img/about/1.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>2009-2011</h4>
+                                <h4 class="subheading">Our Humble Beginnings</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="../static/assets/img/about/2.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>March 2011</h4>
+                                <h4 class="subheading">An Agency is Born</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="../static/assets/img/about/3.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>December 2015</h4>
+                                <h4 class="subheading">Transition to Full Service</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="../static/assets/img/about/4.jpg" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>July 2020</h4>
+                                <h4 class="subheading">Phase Two Expansion</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image">
+                            <h4>
+                                Be Part
+                                <br />
+                                Of Our
+                                <br />
+                                Story!
+                            </h4>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+        <!-- Team-->
+        <section class="page-section" id="team">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Our A-MAIS-ing Team</h2>
+                    <h3 class="section-subheading text-muted">The people behind this amazing project.</h3>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="../static/assets/img/team/1.jpg" alt="Albufera" />
+                            <h4>John Luis Albufera</h4>
+                            <p class="text-muted">Leader</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="John Luis Albufera Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="../static/assets/img/team/2.jpg" alt="Paynandsos" />
+                            <h4>Jun Rey Paynandsos</h4>
+                            <p class="text-muted">Member</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Jun Rey Paynandsos Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="../static/assets/img/team/3.jpg" alt="Gabayno" />
+                            <h4>Allan Royce Gabayno</h4>
+                            <p class="text-muted">Member</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Allan Royce Gabayno Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 mx-auto text-center"><p class="large text-muted">We are F1 Second Year Information Technology students from Mindoro State University Main Campus</p></div>
+                </div>
+            </div>
+        </section>
+        
+
+        <!-- Footer-->
+        <footer class="footer py-4">
+            <div class="container">
+                    <div class="text-center">MAISCAN: A Web Application for Corn Leaf Disease Identication and Prevention for Farmers of Barangay Pagkakaisa, Naujan</div>
+            </div>
+        </footer>
+
+
+        <!-- Portfolio Modals-->
+        <!-- Portfolio item 1 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Blight</h2>
+                                    <p class="item-intro text-muted">This corn leaf picture has a blight disease.</p>
+                                    <img class="img-fluid d-block mx-auto" src="../static/assets/img/blight.jpg" alt="blight" />
+                                    <p style="text-align: justify; text-justify: inter-word;">Corn leaf blight is a fungal disease that affects corn plants, typically caused by pathogens such as the fungi 
+                                        Exserohilum turcicum and Bipolaris maydis. This disease manifests as irregularly shaped lesions or spots on the 
+                                        leaves of the corn plant, which may start as small, water-soaked areas and eventually enlarge to form large, tan to 
+                                        brown lesions with dark borders. In severe cases, the lesions can merge, leading to extensive damage to the leaves. 
+                                        Corn leaf blight can reduce photosynthetic efficiency, weaken the plant, and result in yield losses if left unmanaged. 
+                                        Warm and humid weather conditions, along with high plant densities and susceptible corn varieties, create favorable 
+                                        environments for the development and spread of corn leaf blight.</p>
+                                    <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                        <li>
+                                            <strong style="text-align: center;">Symtoms:</strong>
+                                            <li>One of the primary symptoms is the appearance of irregularly shaped lesions or spots on the leaves. 
+                                            These lesions often start as small, water-soaked areas, which gradually enlarge over time. As the disease progresses, 
+                                            the lesions develop into larger, tan to brown patches with dark margins. In severe cases, these lesions can coalesce, 
+                                            leading to extensive blighting of the leaf tissue. Additionally, infected leaves may exhibit signs of chlorosis or yellowing
+                                            surrounding the lesions, further compromising the plant’s ability to photosynthesize. In some instances, the disease may also 
+                                            affect other parts of the plant, such as the stalks and husks, causing similar lesions and discoloration.</li>
+                                        </li>
+                                        <br>
+                                        <li>
+                                            <strong>Cure:</strong>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Planting corn varieties that are resistant to the pathogens causing leaf blight, as this can significantly 
+                                                reduce the susceptibility of the plants to infection.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Implementing crop rotation practices can help break the disease cycle by reducing the buildup of pathogens in the soil. </li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Maintaining proper spacing between plants and adequate air circulation can also help create unfavorable 
+                                                conditions for the development and spread of leaf blight.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Application of biocontrol agents or beneficial microorganisms in the soil to suppress the growth of pathogens.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Adequate nutrient management, including balanced fertilization and soil amendment practices, can also promote 
+                                                plant health and enhance resistance to diseases like corn leaf blight.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Implementing timely irrigation practices that avoid prolonged leaf wetness periods can help minimize the risk of fungal infection and spread.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Practicing good sanitation measures, such as removing and destroying infected plant debris, can help reduce inoculum levels 
+                                                and prevent the spread of disease from one growing season to the next.</li>
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 2 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Leaf Spot</h2>
+                                    <p class="item-intro text-muted">This corn leaf picture has a leaf spot disease</p>
+                                    <img class="img-fluid d-block mx-auto" src="../static/assets/img/spot.jpg" alt="leaf spot" />
+                                    <p style="text-align: justify; text-justify: inter-word;">
+                                        Corn leaf spot disease, also known as northern or southern corn leaf blight depending on the specific pathogens 
+                                        involved, is a fungal infection that affects corn plants worldwide. The disease is primarily caused by fungi of 
+                                        the genus Bipolaris, including Bipolaris maydis and Bipolaris zeicola, as well as the fungus Exserohilum turcicum. 
+                                        Corn leaf spot manifests as circular to oval-shaped lesions or spots on the leaves, initially appearing as small, 
+                                        water-soaked areas that later develop into brown to tan spots with dark margins. Corn leaf spot can spread rapidly 
+                                        under favorable environmental conditions, including warm temperatures, high humidity, and prolonged leaf wetness periods. </p>
+                                    <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                        <li>
+                                            <strong style="text-align: center;">Symtoms:</strong>
+                                            <li>One of the primary symptoms of corn leaf spot is the appearance of small, circular to oval-shaped lesions 
+                                                or spots on the leaves. These lesions typically start as tiny, water-soaked areas that eventually develop 
+                                                into brown to tan spots with dark margins. As the disease progresses, the spots may enlarge and coalesce, 
+                                                leading to the formation of irregularly shaped lesions. In severe cases, the lesions can cover a significant 
+                                                portion of the leaf surface, resulting in extensive blighting and necrosis of the affected tissue. Infected 
+                                                leaves may also exhibit signs of chlorosis or yellowing around the lesions, which further compromises the plant’s 
+                                                ability to photosynthesize and can lead to reduced yield and quality. Also, corn leaf spot may affect other parts 
+                                                of the plant, including the stalks and husks, causing similar lesions and discoloration.</li>
+                                        </li>
+                                        <br>
+                                        <li>
+                                            <strong>Cure:</strong>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Selecting corn varieties with genetic resistance to the pathogens causing the disease because the resistant varieties are 
+                                                less susceptible to infection and can help minimize the need for chemical intervention.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Practicing crop rotation by alternating corn with non-host crops can disrupt the disease cycle and reduce the buildup of pathogens 
+                                                in the soil, thereby lowering the risk of infection in subsequent growing seasons.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Proper plant spacing and adequate air circulation within the crop canopy can help create an 
+                                                environment less conducive to disease development.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Avoiding overhead irrigation and minimizing leaf wetness periods can also help reduce the risk of fungal infection and spread. </li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Maintaining optimal soil fertility and implementing balanced fertilization practices can promote plant health and 
+                                                enhance resistance to diseases like corn leaf spot.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Application of biocontrol agents or the promotion of beneficial microorganisms in the soil, 
+                                                can help suppress the populations of pathogens causing leaf spot.</li>
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 3 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Common Rust</h2>
+                                    <p class="item-intro text-muted">This corn leaf picture has a common rust disease</p>
+                                    <img class="img-fluid d-block mx-auto" src="../static/assets/img/rust.jpg" alt="common rust" />
+                                    <p style="text-align: justify; text-justify: inter-word;">
+                                        Corn common rust, caused by the fungus Puccinia sorghi, is a widespread fungal disease that affects corn 
+                                        plants globally. It is characterized by the development of small, circular to elongated orange to reddish-brown 
+                                        pustules, known as sori, on the leaves, stalks, and husks of infected plants. These pustules contain masses of 
+                                        rust-colored spores, which can easily spread to nearby plants through wind or rain, contributing to the rapid 
+                                        spread of the disease. Common rust infections typically occur during periods of warm, humid weather, with optimal 
+                                        temperatures ranging from 20 to 27 degrees Celsius. The disease can develop rapidly under favorable environmental 
+                                        conditions, leading to extensive damage to corn crops if left unmanaged.</p>
+                                    <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                        <li>
+                                            <strong style="text-align: center;">Symtoms:</strong>
+                                            <li>The primary symptom of corn common rust is the appearance of small, circular to elongated orange to 
+                                                reddish-brown pustules, known as sori, on the leaves, stalks, and husks of the corn plant. These pustules 
+                                                contain masses of rust-colored spores, which give the infected areas a dusty or rusty appearance. 
+                                                Initially, the pustules may appear scattered or clustered on the leaf surface, but as the disease 
+                                                progresses, they can spread and cover extensive areas of the plant. Infected leaves may also exhibit 
+                                                signs of chlorosis or yellowing around the pustules, and severe infections can lead to premature leaf 
+                                                senescence and reduced photosynthetic capacity. In addition to affecting the leaves, common rust can also 
+                                                infect other parts of the plant, such as the tassels and ears, leading to similar symptoms. </li>
+                                        </li>
+                                        <br>
+                                        <li>
+                                            <strong>Cure:</strong>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Selecting corn varieties with genetic resistance to common rust.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Practicing crop rotation by alternating corn with non-host crops can disrupt the disease cycle 
+                                                and reduce the buildup of rust pathogens in the soil, thereby 
+                                                lowering the risk of infection in subsequent growing seasons.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Proper plant spacing and adequate air circulation within the crop canopy can 
+                                                help create an environment less conducive to disease development.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Avoiding excessive nitrogen fertilization and maintaining optimal soil 
+                                                fertility can also promote plant health and enhance resistance to rust diseases.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Minimizing leaf wetness periods by implementing appropriate irrigation practices 
+                                                and avoiding overhead irrigation can help reduce the risk of fungal infection and spread.</li>
+                                            <li style="list-style-type: circle; list-style-position: inside;">
+                                                Practicing good sanitation measures, such as removing and destroying infected plant debris, 
+                                                can help reduce inoculum levels and prevent the spread of disease from one growing season to the next.</li>
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 4 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Healthy</h2>
+                                    <p class="item-intro text-muted">This corn leaf picture has no disease</p>
+                                    <img class="img-fluid d-block mx-auto" src="../static/assets/img/healthy.jpg" alt="healthy" />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>How to take care:</strong>
+                                            Eme
+                                        </li>
+                                        <li>
+                                            <strong>Needs:</strong>
+                                            Eme
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 5 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Project Name</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="../static/assets/img/portfolio/5.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Southwest
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Website Design
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 6 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Project Name</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="../static/assets/img/portfolio/6.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Window
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Photography
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="../static/js/scripts.js"></script>
+        <script src="../static/js/camera.js"></script>
+        
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script>
+            // Image preview functionality
+            const input = document.getElementById('image-upload');
+            const preview = document.getElementById('image-preview');
+    
+            input.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+    
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+    
+                reader.readAsDataURL(file);
+            });
+
+            const fileUploadRadio = document.getElementById('file-upload');
+            const cameraUploadRadio = document.getElementById('camera-upload');
+            const uploadForm = document.getElementById('upload-form');
+            const cameraForm = document.getElementById('camera-form');
+            
+            fileUploadRadio.addEventListener('change', () => {
+                if (fileUploadRadio.checked) {
+                    uploadForm.style.display = 'block';
+                    cameraForm.style.display = 'none';
+                }
+            });
+            
+            cameraUploadRadio.addEventListener('change', () => {
+                if (cameraUploadRadio.checked) {
+                    uploadForm.style.display = 'none';
+                    cameraForm.style.display = 'block';
+                }
+            });
+        </script>
+    </body>
+</html>

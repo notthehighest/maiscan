@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAISCAN</title>
+    <link rel="icon" type="image/x-icon" href="../static/assets/img/maiscan.png" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-white font-[Montserrat]">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="fixed top-4 right-4 z-50">
+                    <div class="bg-{{ 'green' if category == 'success' else 'yellow' }}-500 text-white px-6 py-3 rounded-lg shadow-lg">
+                        {{ message }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Hero Section -->
+    <section class="min-h-screen flex flex-col justify-center items-center bg-green-50">
+        <h1 class="text-6xl font-bold text-green-900 mb-4">Welcome to <span class="text-yellow-500">MAISCAN</span></h1>
+        <p class="text-xl text-green-700 mb-8">Your ultimate solution for corn disease detection.</p>
+        <div class="space-x-4">
+            <a href="{{ url_for('login') }}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-300">
+                <i class="fas fa-sign-in-alt mr-2"></i>Login
+            </a>
+            <a href="{{ url_for('register') }}" class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition duration-300">
+                <i class="fas fa-user-plus mr-2"></i>Register
+            </a>
+        </div>
+    </section>
+
+    <!-- Information About Corn -->
+    <section class="min-h-screen flex flex-col justify-center items-center bg-white p-8">
+        <h2 class="text-4xl font-bold text-green-900 mb-8">About Corn</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl">
+            <!-- Corn Cultivation -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:bg-green-100 transition duration-300">
+                <i class="fas fa-seedling text-4xl text-green-600 mb-4 hover:text-yellow-800 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Corn Cultivation</h3>
+                <p class="text-green-700">Corn is one of the most widely grown crops in the world. It thrives in warm climates, requires well-drained soil, and is planted in rows for optimal growth.</p>
+            </div>
+
+            <!-- Common Diseases -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:bg-green-100 transition duration-300">
+                <i class="fas fa-bug text-4xl text-green-600 mb-4 hover:text-yellow-800 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Common Diseases</h3>
+                <p class="text-green-700">Corn is susceptible to diseases like blight, rust, and leaf spot, which can significantly reduce yield. Early detection and proper management are crucial.</p>
+            </div>
+
+            <!-- How to Plant -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:bg-green-100 transition duration-300">
+                <i class="fas fa-tractor text-4xl text-green-600 mb-4 hover:text-yellow-800 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">How to Plant</h3>
+                <p class="text-green-700">
+                    - Plant seeds 1.5 to 2 inches deep in well-drained soil.<br>
+                    - Space seeds 8-12 inches apart in rows 30-36 inches apart.<br>
+                    - Ensure adequate sunlight and water regularly.
+                </p>
+            </div>
+
+            <!-- When to Harvest -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:bg-green-100 transition duration-300">
+                <i class="fas fa-calendar-alt text-4xl text-green-600 mb-4 hover:text-yellow-800 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">When to Harvest</h3>
+                <p class="text-green-700">
+                    - Harvest sweet corn when kernels are plump and release a milky liquid when pressed.<br>
+                    - Field corn is harvested when kernels are hard and dry.<br>
+                    - Typically 60-100 days after planting, depending on the variety.
+                </p>
+            </div>
+
+            <!-- Types of Corn -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:bg-green-100 transition duration-300">
+                <i class="fas fa-cogs text-4xl text-green-600 mb-4 hover:text-yellow-800 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Types of Corn</h3>
+                <p class="text-green-700">
+                    - <strong>Sweet Corn</strong>: Consumed as a vegetable, harvested early.<br>
+                    - <strong>Field Corn</strong>: Used for animal feed and industrial products.<br>
+                    - <strong>Popcorn</strong>: A special variety with hard kernels that pop when heated.<br>
+                    - <strong>Flint Corn</strong>: Known for its hard outer layer, used for decoration and flour.
+                </p>
+            </div>
+
+            <!-- Nutritional Value -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:bg-green-100 transition duration-300">
+                <i class="fas fa-utensils text-4xl text-green-600 mb-4 hover:text-yellow-800 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Nutritional Value</h3>
+                <p class="text-green-700">
+                    - Rich in carbohydrates, fiber, and essential vitamins like B-complex.<br>
+                    - Contains antioxidants like lutein and zeaxanthin.<br>
+                    - A good source of energy and supports digestive health.
+                </p>
+            </div>
+
+            <!-- Growth Stages -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:bg-green-100 transition duration-300">
+                <i class="fas fa-chart-line text-4xl text-green-600 mb-4 hover:text-yellow-800 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Growth Stages</h3>
+                <p class="text-green-700">
+                    - <strong>Germination</strong>: Seed sprouts and roots develop.<br>
+                    - <strong>Vegetative</strong>: Leaves and stalks grow rapidly.<br>
+                    - <strong>Reproductive</strong>: Tassels and ears form, leading to pollination.<br>
+                    - <strong>Maturity</strong>: Kernels harden, and the plant is ready for harvest.
+                </p>
+            </div>
+
+            <!-- Global Production -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:bg-green-100 transition duration-300">
+                <i class="fas fa-globe text-4xl text-green-600 mb-4 hover:text-yellow-800 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Global Production</h3>
+                <p class="text-green-700">
+                    - The United States, China, and Brazil are the top producers.<br>
+                    - Corn is a staple food in many countries, especially in Africa and Latin America.<br>
+                    - Used in diverse industries, from food to biofuels.
+                </p>
+            </div>
+
+            <!-- Importance of Corn -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:bg-green-100 transition duration-300">
+                <i class="fas fa-leaf text-4xl text-green-600 mb-4 hover:text-yellow-800 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Importance of Corn</h3>
+                <p class="text-green-700">
+                    - A staple food for millions worldwide.<br>
+                    - Used in animal feed, biofuels, and industrial products.<br>
+                    - Plays a vital role in global agriculture and economies.
+                </p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Services Offered -->
+    <section class="min-h-screen flex flex-col justify-center items-center bg-green-50 p-8">
+        <h2 class="text-4xl font-bold text-green-900 mb-8">Our Services</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl">
+            <!-- Corn Disease Detection -->
+            <div class="bg-white p-6 rounded-lg shadow-lg hover:scale-105 hover:bg-green-100 transition duration-300 ease-in-out">
+                <i class="fas fa-bug text-4xl text-yellow-500 mb-4 hover:text-green-700 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Corn Disease Detection</h3>
+                <p class="text-green-700">Our advanced imaging technology detects diseases in corn plants by analyzing photos of leaves, helping farmers identify issues early for timely intervention.</p>
+            </div>
+
+            <!-- Corn Disease Prevention -->
+            <div class="bg-white p-6 rounded-lg shadow-lg hover:scale-105 hover:bg-green-100 transition duration-300 ease-in-out">
+                <i class="fas fa-shield-alt text-4xl text-yellow-500 mb-4 hover:text-green-700 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Corn Disease Prevention</h3>
+                <p class="text-green-700">We offer guidance on preventive measures, including crop rotation, pesticide use, and soil management, to minimize the risk of disease and maximize yield.</p>
+            </div>
+
+            <!-- Automatic Corn Sorting -->
+            <div class="bg-white p-6 rounded-lg shadow-lg hover:scale-105 hover:bg-green-100 transition duration-300 ease-in-out">
+                <i class="fas fa-cogs text-4xl text-yellow-500 mb-4 hover:text-green-700 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Automatic Corn Sorting</h3>
+                <p class="text-green-700">Using state-of-the-art sorting technology, we automatically classify corn based on size, ensuring uniform quality for optimal marketability.</p>
+            </div>
+
+            <!-- Report Generation -->
+            <div class="bg-white p-6 rounded-lg shadow-lg hover:scale-105 hover:bg-green-100 transition duration-300 ease-in-out">
+                <i class="fas fa-file-alt text-4xl text-yellow-500 mb-4 hover:text-green-700 transition duration-300"></i>
+                <h3 class="text-2xl font-semibold text-green-900 mb-2">Corn Report Generation</h3>
+                <p class="text-green-700">Our service generates detailed reports on corn plant health, disease status, and growth progress, giving farmers actionable insights to improve crop management.</p>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Developers -->
+    <section class="min-h-screen flex flex-col justify-center items-center bg-white p-8">
+        <h2 class="text-4xl font-bold text-green-900 mb-8">Meet the aMAISing Developers</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl">
+            <!-- Developer 1 -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
+                <a href="https://www.facebook.com/itslowes" target="_blank" class="block text-center">
+                    <img src="../static/assets/img/team/88.png" alt="John Luis Albufera" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-green-600 hover:border-yellow-500 transition-all duration-300">
+                    <h3 class="text-2xl font-semibold text-green-900 mb-2">John Luis Albufera</h3>
+                    <p class="text-green-700">Lead Developer</p>
+                </a>
+            </div>
+
+            <!-- Developer 2 -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
+                <a href="https://www.facebook.com/saymyname.happi" target="_blank" class="block text-center">
+                    <img src="../static/assets/img/team/888.png" alt="Chyryle Joy Dairo" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-green-600 hover:border-yellow-500 transition-all duration-300">
+                    <h3 class="text-2xl font-semibold text-green-900 mb-2">Chyryle Joy Dairo</h3>
+                    <p class="text-green-700">Developer</p>
+                </a>
+            </div>
+
+            <!-- Developer 3 -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
+                <a href="https://www.facebook.com/Kotarooooo.II" target="_blank" class="block text-center">
+                    <img src="../static/assets/img/team/8888.png" alt="Rafaello Kotaro Omolida" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-green-600 hover:border-yellow-500 transition-all duration-300">
+                    <h3 class="text-2xl font-semibold text-green-900 mb-2">Rafaello Kotaro Omolida</h3>
+                    <p class="text-green-700">Developer</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Organization -->
+    <section class="min-h-screen flex flex-col justify-center items-center bg-green-50 p-8">
+        <h2 class="text-4xl font-bold text-green-900 mb-8">PINAGSABANGAN 1 VEGETABLE GROWERS ASSOCIATION</h2>
+        <div class="max-w-4xl text-center">
+            <p class="text-green-700 text-lg mb-8">MAISCAN is a project developed by a team of passionate individuals dedicated to helping farmers improve crop yield through advanced technology.</p>
+            <a href="#" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-300">
+                <i class="fas fa-info-circle mr-2"></i>Learn More
+            </a>
+        </div>
+    </section>
+</body>
+</html>

@@ -1,0 +1,24 @@
+# flask
+# flask-login
+# flask-bcrypt
+# firebase-admin
+# pillow
+# opencv-python
+# numpy
+# tensorflow
+# keras
+# pyrebase
+# python-dotenv
+# python-dateutil
+# gunicorn
+
+
+Flask==2.3.3
+flask-login==0.6.3
+firebase-admin==6.5.0
+pyrebase4==4.7.1
+python-dotenv==1.0.1
+numpy==1.26.4
+tensorflow==2.15.0
+keras==2.15.0
+gunicorn==21.2.0

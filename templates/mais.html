@@ -1,0 +1,3448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>MAISCAN</title>
+    <link rel="icon" type="image/x-icon" href="../static/assets/img/maiscan.png" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+    <link href="../static/css/styles.css" rel="stylesheet" />
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> -->
+
+    <style>
+        .upload {
+            background-color: #fff;
+            border: 1px solid #45a049;
+            padding: 10px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        #image-preview {
+            max-width: 100%;
+            max-height: 400px;
+        }
+
+        .submit-button {
+            background-color: #ffc800;
+            border: none;
+            color: white;
+            padding: 12px 34px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 10px;
+            font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            font-weight: bold;
+
+        }
+
+        .submit-button:hover {
+            background-color: #45a049;
+        }
+
+
+        #camera-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #video-preview, #canvas-preview {
+            max-width: 100%;
+            max-height: 400px;
+            margin-bottom: 15px;
+        }
+        .camera-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        /*----------------------*/
+        :root {
+            --bs-primary: #ffc800;
+            --primary-green: #2e7d32;
+            --light-green: #4caf50;
+            --pale-green: #8bc34a;
+            --primary-yellow: var(--bs-primary);
+            --light-yellow: #ffeb3b;
+            --pale-yellow: #fff9c4;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        .data-display {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .date-sidebar {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+        
+        .current-date {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-green);
+            margin-top: 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        /* Calendar Styles */
+        .calendar {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .month-nav {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--primary-green);
+        }
+        
+        .month-display {
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        
+        .day-header {
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary-green);
+            padding: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            font-size: 0.9rem;
+        }
+        
+        .calendar-day:hover {
+            background-color: var(--pale-yellow);
+        }
+        
+        .calendar-day.today {
+            background-color: var(--primary-yellow);
+            color: #222;
+            font-weight: 600;
+        }
+        
+        .calendar-day.selected {
+            background-color: var(--primary-green);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .calendar-day.has-data::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            width: 4px;
+            height: 4px;
+            background-color: var(--primary-green);
+            border-radius: 50%;
+        }
+        
+        .calendar-day.other-month {
+            color: #bbb;
+        }
+        
+        .stats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .total-stats {
+            background: linear-gradient(135deg, var(--primary-yellow), #ffda44);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .total-stats h2 {
+            color: #222;
+            margin-top: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .total-value {
+            font-size: 48px;
+            font-weight: bold;
+            color: #222;
+            margin: 10px 0;
+        }
+        
+        .size-stats-row {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .size-stat {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .size-stat h3 {
+            margin-top: 0;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .size-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            margin: 10px 0;
+        }
+        
+        .size-percentage {
+            font-size: 18px;
+            color: white;
+        }
+        
+        .small-corn {
+            background: linear-gradient(135deg, var(--pale-green), var(--light-green));
+        }
+        
+        .medium-corn {
+            background: linear-gradient(135deg, var(--light-green), var(--primary-green));
+        }
+        
+        .large-corn {
+            background: linear-gradient(135deg, var(--primary-green), #1b5e20);
+        }
+        
+        /* Responsive styles */
+        @media (min-width: 768px) {
+            .size-stats-row {
+                flex-direction: row;
+            }
+            
+            .size-stat {
+                flex: 1;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .data-display {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            
+            .date-sidebar {
+                width: 350px;
+                flex-shrink: 0;
+            }
+            
+            .stats-container {
+                flex: 1;
+            }
+        }
+
+        /*SOILLLLLLLLLLLLLL*/
+        /* Soil Moisture Specific Styles */
+    #soil {
+        background-color: #f8f9fa;
+    }
+    
+    .gauge {
+        height: 30px;
+        background-color: #e9ecef;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .gauge-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #e74c3c, #f39c12 30%, #2ecc71);
+        transition: width 0.6s ease-out;
+    }
+    
+    .moisture-status .badge {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .status-dry {
+        background-color: #e74c3c;
+    }
+    
+    .status-optimal {
+        background-color: #2ecc71;
+    }
+    
+    .status-wet {
+        background-color: #3498db;
+    }
+    
+    #moisture-description {
+        border-left: 4px solid #6c757d;
+    }
+    
+
+    .mode-selector {
+            margin-bottom: 20px;
+        }
+        .mode-btn {
+            margin: 5px;
+            padding: 10px 20px;
+        }
+        .camera-container {
+            position: relative;
+            margin: 20px auto;
+            max-width: 640px;
+        }
+        .video-preview {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .detection-overlay {
+            position: relative;
+            display: inline-block;
+        }
+        .detection-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+        .status-active {
+            background-color: #28a745;
+        }
+        .status-inactive {
+            background-color: #dc3545;
+        }
+        .status-processing {
+            background-color: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .preview-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .control-section {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .section-title {
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .confidence-bar {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+        .confidence-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        .healthy { background-color: #28a745; }
+        .disease { background-color: #dc3545; }
+        .invalid { background-color: #6c757d; }
+        .capture-form { display: none; }
+
+        .stat-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .bg-custom-1 { background: linear-gradient(45deg, #4e73df, #224abe); }
+        .bg-custom-2 { background: linear-gradient(45deg, #1cc88a, #13855c); }
+        .bg-custom-3 { background: linear-gradient(45deg, #36b9cc, #258391); }
+        
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .page-button {
+            padding: 5px 15px;
+            margin: 0 5px;
+            border: 1px solid #dee2e6;
+            background: white;
+            cursor: pointer;
+        }
+        .page-button.active {
+            background: #198754;
+            color: white;
+            border-color: #198754;
+        }
+        .page-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .export-buttons {
+            margin-bottom: 15px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .confidence-cell {
+            font-weight: bold;
+        }
+        .confidence-high { color: #198754; }
+        .confidence-medium { color: #fd7e14; }
+        .confidence-low { color: #dc3545; }
+        #loadingIndicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+    </style>
+</head>
+
+<body id="page-top">
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand" href="#page-top"><img src="../static/assets/img/maiscan.png" alt="">MAISCAN</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars ms-1"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="#dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#scan">MAIScan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#corn">MAISORT</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#portfolio">Diseases</a></li>
+                    
+                    <!-- Profile Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" 
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle me-1"></i>Profile</a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                    <i class="fas fa-user me-2"></i>Account
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Masthead-->
+    <header class="masthead">
+        <div class="container">
+            <div class="masthead-subheading">Welcome {{ current_user.username }} to</div>
+            <div class="masthead-heading text-uppercase">MAISCAN</div>
+            <a class="btn btn-primary btn-xl text-uppercase" href="#scan">SCAN</a>
+        </div>
+    </header>
+
+    <!-- <section class="page-section" id="services">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-heading text-uppercase">Services</h2>
+                <h3 class="section-subheading text-muted">We will help you identify and provide solutions for your Corn
+                Plant Diseases.</h3>
+            </div>
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <span class="fa-stack fa-4x">
+                        <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                        <i class="fas fa-leaf fa-stack-1x fa-inverse"></i>
+                    </span>
+                    <h4 class="my-3">Corn Disease Identication</h4>
+                    <p class="text-muted">MAISCAN utilizes image recognition technology to accurately identify various
+                        corn leaf
+                        diseases.
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <span class="fa-stack fa-4x">
+                        <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                        <i class="fas fa-file fa-stack-1x fa-inverse"></i>
+                    </span>
+                    <h4 class="my-3">Corn Disease Prevention</h4>
+                    <p class="text-muted">We provide information for prevention for leaf diseases and give you ways to
+                        protect your
+                        corn crops and keep your plants healthy.
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <span class="fa-stack fa-4x">
+                        <i class="fas fa-circle fa-stack-2x text-primary"></i>
+                        <i class="fas fa-sort fa-stack-1x fa-inverse"></i>
+                    </span>
+                    <h4 class="my-3">Automated Sorting</h4>
+                    <p class="text-muted">You can easily upload or take photos of corn leaves and upload it, MAISCAN
+                        will check the leaf's condition right away.</p>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+    <!-- Dashboard -->
+    <section class="page-section bg-white py-5" id="dashboard">
+        <div class="container mx-auto px-4">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h2 class="section-heading text-uppercase">Dashboard</h2>
+                <h3 class="section-subheading text-muted">Track and Monitor Corn Disease Scanning Data</h3>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="row mb-5">
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card stat-card border-0 bg-custom-1 text-white h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-uppercase mb-1">Total Uploaded Images</div>
+                                    <div class="h5 mb-0 font-weight-bold">{{ total_images }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="stat-icon fas fa-images"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card stat-card border-0 bg-custom-2 text-white h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-uppercase mb-1">Disease Count</div>
+                                    <div class="h5 mb-0 font-weight-bold">{{ disease_count }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="stat-icon fas fa-virus"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card stat-card border-0 bg-custom-3 text-white h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-uppercase mb-1">Most Predicted Disease</div>
+                                    <div class="h5 mb-0 font-weight-bold">{{ most_common_disease }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="stat-icon fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Disease Counts Graph -->
+            <div class="mb-5">
+                <h2 class="h2 text-success mb-3">Disease Distribution</h2>
+                <div class="card p-4 shadow-sm">
+                    <div class="chart-container">
+                        <canvas id="diseaseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Upload History Button -->
+            <div class="mb-4 text-center">
+                <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#uploadHistoryModal">
+                    <i class="fas fa-history me-2"></i>View Upload History
+                </button>
+            </div>
+        </div>
+    </section>
+    
+
+    <section class="page-section bg-light" id="scan">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-heading text-uppercase">MAISCAN</h2>
+                <h3 class="section-subheading text-muted">Detect corn plant diseases using different methods</h3>
+
+                <!-- Mode Selection -->
+                <div class="mode-selector">
+                    <button id="upload-mode" class="btn btn-primary mode-btn">
+                        <i class="fas fa-upload"></i> Upload Image
+                    </button>
+                    <button id="capture-mode" class="btn btn-secondary mode-btn">
+                        <i class="fas fa-camera"></i> Capture Image
+                    </button>
+                    <button id="realtime-mode" class="btn btn-secondary mode-btn">
+                        <i class="fas fa-video"></i> Real-time Detection
+                    </button>
+                </div>
+
+                <!-- Upload Section -->
+                <div id="upload-section" class="control-section">
+                    <h4 class="section-title"><i class="fas fa-upload"></i> Upload Image</h4>
+                    <form action="/predict" method="post" enctype="multipart/form-data" id="upload-form">
+                        <div class="mb-3">
+                            <label for="image-upload" class="form-label">Select an image to analyze:</label>
+                            <input type="file" name="image" class="form-control" id="image-upload" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-search"></i> Analyze Image
+                        </button>
+                    </form>
+                    
+                    <div id="upload-preview-container" class="preview-container" style="display: none;">
+                        <h5>Image Preview</h5>
+                        <img id="upload-preview" class="image-preview" src="" alt="Preview">
+                    </div>
+                </div>
+
+                <!-- Capture Section -->
+                <div id="capture-section" class="control-section" style="display: none;">
+                    <h4 class="section-title"><i class="fas fa-camera"></i> Capture Image</h4>
+                    <div class="camera-container">
+                        <div class="detection-overlay">
+                            <video id="video-preview" class="video-preview" width="640" height="480" autoplay playsinline muted></video>
+                            <div id="capture-info" class="detection-info" style="display: none;">
+                                Camera Active
+                            </div>
+                        </div>
+                        
+                        <canvas id="canvas-preview" width="640" height="480" style="display:none;"></canvas>
+                        
+                        <div class="camera-controls mt-3">
+                            <button type="button" id="toggle-camera" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Start Camera
+                            </button>
+                            <button type="button" id="capture-image" class="btn btn-success" disabled>
+                                <i class="fas fa-camera"></i> Capture Image
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="capture-preview-container" class="preview-container" style="display: none;">
+                        <h5>Captured Image</h5>
+                        <img id="capture-preview" class="image-preview" src="" alt="Preview">
+                        <div class="mt-3">
+                            <!-- Hidden form for capture mode that will be submitted -->
+                            <form action="/predict" method="post" enctype="multipart/form-data" id="capture-form" class="capture-form">
+                                <input type="file" name="image" id="capture-file-input">
+                            </form>
+                            
+                            <button id="analyze-capture" class="btn btn-success">
+                                <i class="fas fa-search"></i> Analyze This Image
+                            </button>
+                            <button id="retake-capture" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Retake
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Detection Section -->
+                <div id="realtime-section" class="control-section" style="display: none;">
+                    <h4 class="section-title"><i class="fas fa-video"></i> Real-time Detection</h4>
+                    <div class="camera-container">
+                        <div class="detection-overlay">
+                            <video id="realtime-video" class="video-preview" width="640" height="480" autoplay playsinline muted></video>
+                            <div id="realtime-info" class="detection-info">
+                                Real-time Detection 
+                                <span id="realtime-status" class="status-indicator status-inactive"></span>
+                            </div>
+                        </div>
+                        
+                        <canvas id="realtime-canvas" width="640" height="480" style="display:none;"></canvas>
+                        
+                        <div class="camera-controls mt-3">
+                            <button type="button" id="toggle-realtime-camera" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Start Camera
+                            </button>
+                            <button type="button" id="toggle-detection" class="btn btn-warning" disabled>
+                                <i class="fas fa-play-circle"></i> Start Detection
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="auto-capture-mode">
+                            <label class="form-check-label" for="auto-capture-mode">
+                                Auto-capture when disease detected
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="result-container" class="result-container" style="display: none;">
+                    <h4 class="section-title">Analysis Results</h4>
+                    <div id="prediction-result"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- <section class="page-section" id="soil">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-heading text-uppercase">MAISOIL</h2>
+                <h3 class="section-subheading text-muted">This page is for data for automatic corn sorting</h3>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-lg">
+                        <div class="card-body p-4">
+
+                            <div class="row align-items-center mb-4">
+                                <div class="col-md-6 text-center">
+                                    <div class="moisture-percent display-2 fw-bold" id="moisture-percent">0%</div>
+                                    <div class="moisture-status">
+                                        <span class="badge rounded-pill fs-5" id="moisture-status">Loading...</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div id="moisture-gauge" class="gauge">
+                                        <div id="gauge-fill" class="gauge-fill"></div>
+                                    </div>
+                                    <div class="gauge-labels d-flex justify-content-between mt-2">
+                                        <span>Dry</span>
+                                        <span>Optimal</span>
+                                        <span>Wet</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Raw Sensor Value</h5>
+                                            <div class="display-5" id="raw-value">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Last Updated</h5>
+                                            <div class="fs-4" id="last-updated">Never</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert text-center mt-3" id="moisture-description">
+                                <i class="fas fa-sync fa-spin me-2"></i> Connecting to sensor...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+    <section class="page-section bg-white" id="corn">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-heading text-uppercase">MAISORT</h2>
+                <h3 class="section-subheading text-muted">This page is for data for automatic corn sorting</h3>
+            </div>
+
+            <div class="dashboard-container">
+                <div class="data-display">
+                    <div class="date-sidebar">
+                        <h3 class="current-date">April 14, 2025</h3>
+                        <div class="calendar">
+                            <div class="calendar-header">
+                                <button class="month-nav" id="prev-month">&lt;</button>
+                                <div class="month-display">April 2025</div>
+                                <button class="month-nav" id="next-month">&gt;</button>
+                            </div>
+                            <div class="calendar-grid" id="calendar-days-header">
+                                <div class="day-header">Su</div>
+                                <div class="day-header">Mo</div>
+                                <div class="day-header">Tu</div>
+                                <div class="day-header">We</div>
+                                <div class="day-header">Th</div>
+                                <div class="day-header">Fr</div>
+                                <div class="day-header">Sa</div>
+                            </div>
+                            <div class="calendar-grid" id="calendar-days">
+                                <!-- Calendar days will be generated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-container">
+                        <div class="total-stats">
+                            <h2>Total Corn Sorted</h2>
+                            <div class="total-value">8,546</div>
+                            <div>All Sizes Combined</div>
+                        </div>
+                        
+                        <div class="size-stats-row">
+                            <div class="size-stat small-corn">
+                                <h3>Small</h3>
+                                <div class="size-value">2,345</div>
+                                <div class="size-percentage">27.4%</div>
+                            </div>
+                            
+                            <div class="size-stat medium-corn">
+                                <h3>Medium</h3>
+                                <div class="size-value">4,512</div>
+                                <div class="size-percentage">52.8%</div>
+                            </div>
+                            
+                            <div class="size-stat large-corn">
+                                <h3>Large</h3>
+                                <div class="size-value">1,689</div>
+                                <div class="size-percentage">19.8%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Grid-->
+    <section class="page-section bg-dark" id="portfolio">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-heading text-uppercase text-white">Corn Plant Disease</h2>
+                <h3 class="section-subheading text-muted text-white">These are the different types of leaf disease of a corn.
+                    However, this are just few of the diseases and will be limited to three types of diseases. We have
+                    trained 3 types of disease and a healthy leaf of a corn.</h3>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 1-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal1">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/aw.jpg" alt="corn blight" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Armyworm</div>
+                            <div class="portfolio-caption-subheading text-muted">Pest Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 2-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal2">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/aphids.jpg" alt="corn leaf spot" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Aphids</div>
+                            <div class="portfolio-caption-subheading text-muted">Leaf Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 3-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal3">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/cw.png" alt="corn common rust" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Common Cutworm</div>
+                            <div class="portfolio-caption-subheading text-muted">Pest Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal4">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-leaf fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/rust.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Common Rust</div>
+                            <div class="portfolio-caption-subheading text-muted">Leaf Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal5">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-bug fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/smut.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Common Smut</div>
+                            <div class="portfolio-caption-subheading text-muted">Leaf Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal6">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-bug fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/borer.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Corn Borer</div>
+                            <div class="portfolio-caption-subheading text-muted">Pest Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal7">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-bug fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/ew.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Earwig</div>
+                            <div class="portfolio-caption-subheading text-muted">Pest Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal8">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-bug fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/fer.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Fusarium Ear Rot</div>
+                            <div class="portfolio-caption-subheading text-muted">Fruit Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal9">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-bug fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/spot.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Gray Leaf Spot</div>
+                            <div class="portfolio-caption-subheading text-muted">Leaf Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal10">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-bug fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/corn.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Healthy Corn</div>
+                            <div class="portfolio-caption-subheading text-muted">No Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal11">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-bug fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/healthy.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Healthy Leaf</div>
+                            <div class="portfolio-caption-subheading text-muted">No Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal12">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-bug fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/blight.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Leaf Blight</div>
+                            <div class="portfolio-caption-subheading text-muted">Leaf Disease</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-4">
+                    <!-- Portfolio item 4-->
+                    <div class="portfolio-item">
+                        <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal13">
+                            <div class="portfolio-hover">
+                                <div class="portfolio-hover-content"><i class="fas fa-bug fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="../static/assets/img/lh.jpg" alt="corn healthy" />
+                        </a>
+                        <div class="portfolio-caption">
+                            <div class="portfolio-caption-heading">Leafhopper</div>
+                            <div class="portfolio-caption-subheading text-muted">Pest Disease</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section" id="services">
+    <div class="container">
+        <div class="text-center">
+            <h2 class="section-heading text-uppercase">MAISIP</h2>
+            <h3 class="section-subheading text-muted">Learn more about Corn Farming through helpful YouTube tutorials.</h3>
+        </div>
+        <div class="row text-center">
+
+            <!-- Video 1 -->
+            <div class="col-md-4">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#videoModal1">
+                    <img class="img-fluid rounded shadow" src="https://img.youtube.com/vi/HQQ8AHOxNdw/0.jpg" alt="Corn Farming in the Philippines">
+                </a>
+                <h4 class="my-3">Corn Farming in the Philippines : Complete Guide from Seeds to Harvest</h4>
+            </div>
+
+            <!-- Video 2 -->
+            <div class="col-md-4">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#videoModal2">
+                    <img class="img-fluid rounded shadow" src="https://img.youtube.com/vi/TDDs0rjKcWk/0.jpg" alt="How to Plant Corn">
+                </a>
+                <h4 class="my-3">How to Plant Corn</h4>
+            </div>
+
+            <!-- Video 3 -->
+            <div class="col-md-4">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#videoModal3">
+                    <img class="img-fluid rounded shadow" src="https://img.youtube.com/vi/iiVLyndKync/0.jpg" alt="Growing and Harvesting Corn in the Philippines">
+                </a>
+                <h4 class="my-3">Growing and Harvesting Corn in the Philippines</h4>
+            </div>
+
+            <!-- Video 4 -->
+            <div class="col-md-4 mt-4">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#videoModal4">
+                    <img class="img-fluid rounded shadow" src="https://img.youtube.com/vi/PHJQlDqhYZc/0.jpg" alt="TOP 5 BEST HYBRID CORN VARIETY">
+                </a>
+                <h4 class="my-3">TOP 5 BEST HYBRID CORN VARIETY</h4>
+            </div>
+
+            <!-- Video 5 -->
+            <div class="col-md-4 mt-4">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#videoModal5">
+                    <img class="img-fluid rounded shadow" src="https://img.youtube.com/vi/C5PW38nE4IQ/0.jpg" alt="Practical Tips nya para sa Successful Corn Farming">
+                </a>
+                <h4 class="my-3">Practical Tips nya para sa Successful Corn Farming</h4>
+            </div>
+
+            <!-- Video 6 -->
+            <div class="col-md-4 mt-4">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#videoModal6">
+                    <img class="img-fluid rounded shadow" src="https://img.youtube.com/vi/1BkuJqyzxFs/0.jpg" alt="PAANO PANGASIWAAN ANG MGA SAKIT NG MAIS">
+                </a>
+                <h4 class="my-3">PAANO PANGASIWAAN ANG MGA SAKIT NG MAIS</h4>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modals -->
+<div class="modal fade" id="videoModal1" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Corn Farming in the Philippines : Complete Guide from Seeds to Harvest</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="ratio ratio-16x9">
+        <iframe src="https://www.youtube.com/embed/HQQ8AHOxNdw" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="videoModal2" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">How to Plant Corn</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="ratio ratio-16x9">
+        <iframe src="https://www.youtube.com/embed/TDDs0rjKcWk" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="videoModal3" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Growing and Harvesting Corn in the Philippines</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="ratio ratio-16x9">
+        <iframe src="https://www.youtube.com/embed/iiVLyndKync" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="videoModal4" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">TOP 5 BEST HYBRID CORN VARIETY</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="ratio ratio-16x9">
+        <iframe src="https://www.youtube.com/embed/PHJQlDqhYZc" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="videoModal5" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Practical Tips nya para sa Successful Corn Farming</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="ratio ratio-16x9">
+        <iframe src="https://www.youtube.com/embed/C5PW38nE4IQ" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="videoModal6" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">PAANO PANGASIWAAN ANG MGA SAKIT NG MAIS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="ratio ratio-16x9">
+        <iframe src="https://www.youtube.com/embed/1BkuJqyzxFs" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+    <!-- About-->
+    <section class="page-section bg-light" id="about">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-heading text-uppercase">About</h2>
+                <h3 class="section-subheading text-muted">Get to know more about MAISCAN.</h3>
+            </div>
+            <div id="accordion">
+                <div class="card">
+                    <div class="card-header" id="headingOne" style="border-color: #ffc800;">
+                        <h5 class="mb-0">
+                            <h5 class="section-subheading text-muted" data-toggle="collapse" data-target="#collapseOne"
+                                aria-expanded="true" aria-controls="collapseOne" style="text-align: center;">
+                                MAISCAN
+                            </h5>
+                        </h5>
+                    </div>
+                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                        <div class="card-body">
+                            <p class="text-muted">
+                                Welcome to MAISCAN, an IoT-based web application and smart system designed for corn farmers. MAISCAN
+                                helps detect corn plant diseases and pests, offers prevention strategies, and includes MAISORT, an
+                                automated corn sorting system based on corn size. It's a digital solution to boost your farming
+                                productivity and efficiency.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="card">
+                    <div class="card-header" id="headingTwo" style="border-color: #ffc800;">
+                        <h5 class="mb-0">
+                            <h5 class="section-subheading text-muted" data-toggle="collapse" data-target="#collapseTwo"
+                                aria-expanded="false" aria-controls="collapseTwo" style="text-align: center;">
+                                How to use MAISCAN?
+                            </h5>
+                        </h5>
+                    </div>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                        <div class="card-body">
+                            <p class="text-muted">
+                                <strong>🔧 How to Use MAISCAN:</strong>
+                                <br>• Sign In or Register to create your account.
+                                <br>• Upload or Capture Images of your corn plants using your device or connected camera.
+                                <br>• Let MAISCAN analyze the image and detect possible diseases or pests.
+                                <br>• View detailed results and prevention tips based on the analysis.
+                                <br>• If using MAISORT, place the corn into the sorter—MAISCAN will automatically sort it into
+                                small, medium, or large sizes.
+                                <br>• Explore our educational resources to learn more about corn care.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="card">
+                    <div class="card-header" id="headingThree" style="border-color: #ffc800;">
+                        <h5 class="mb-0">
+                            <h5 class="section-subheading text-muted" data-toggle="collapse" data-target="#collapseThree"
+                                aria-expanded="false" aria-controls="collapseThree" style="text-align: center;">
+                                How MAISCAN works?
+                            </h5>
+                        </h5>
+                    </div>
+                    <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                        <div class="card-body">
+                            <p class="text-muted">
+                                MAISCAN uses a Convolutional Neural Network (CNN)—a powerful type of artificial intelligence—to
+                                analyze photos of corn leaves and identify signs of diseases and pests. It connects to IoT sensors and
+                                a camera for real-time data, and also integrates a soil moisture sensor and environmental data
+                                (temperature, humidity) to enhance prediction accuracy.
+                                <br>
+                                <br>
+                                MAISORT, our built-in corn sorter, uses infrared sensors and servo motors to automatically classify
+                                corn based on size after harvesting.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="card">
+                    <div class="card-header" id="headingFour" style="border-color: #ffc800;">
+                        <h5 class="mb-0">
+                            <h5 class="section-subheading text-muted" data-toggle="collapse" data-target="#collapseFour"
+                                aria-expanded="false" aria-controls="collapseFour" style="text-align: center;">
+                                Features of MAISCAN
+                            </h5>
+                        </h5>
+                    </div>
+                    <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordion">
+                        <div class="card-body">
+                            <p class="text-muted">
+                                <strong>🌟 Features of MAISCAN:</strong>
+                                <br>• <strong>Corn Disease & Pest Prediction</strong> – Upload or capture images for real-time
+                                disease detection using AI.
+                                <br>• <strong>Prevention Suggestions</strong> – Get customized recommendations to treat or prevent
+                                detected issues.
+                                <br>• <strong>Soil and Environment Monitoring</strong> – Know your field's condition with moisture
+                                and climate sensors.
+                                <br>• <strong>MAISORT: Smart Corn Sorting</strong> – Automatically sorts corn into small, medium,
+                                and large sizes using IoT-based hardware.
+                                <br>• <strong>Educational Hub</strong> – Access guides and tutorials for better crop health and
+                                farming practices.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="card">
+                    <div class="card-header" id="headingFive" style="border-color: #ffc800;">
+                        <h5 class="mb-0">
+                            <h5 class="section-subheading text-muted" data-toggle="collapse" data-target="#collapseFive"
+                                aria-expanded="false" aria-controls="collapseFive" style="text-align: center;">
+                                Why Use MAISCAN?
+                            </h5>
+                        </h5>
+                    </div>
+                    <div id="collapseFive" class="collapse" aria-labelledby="headingFive" data-parent="#accordion">
+                        <div class="card-body">
+                            <p class="text-muted">
+                                <strong>💡 Why Use MAISCAN?</strong>
+                                <br>✅ Boosts accuracy and speed in detecting corn diseases and pests.
+                                <br>✅ Provides real-time prevention advice to protect your crops.
+                                <br>✅ Simplifies post-harvest sorting with automatic size classification.
+                                <br>✅ Saves time, money, and labor through automation and AI.
+                                <br>✅ Designed specifically for the needs of local farmers in Naujan, Oriental Mindoro—and beyond.
+                                <br>✅ Works on your phone, tablet, or computer with an internet connection.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="card">
+                    <div class="card-header" id="headingSix" style="border-color: #ffc800;">
+                        <h5 class="mb-0">
+                            <h5 class="section-subheading text-muted" data-toggle="collapse" data-target="#collapseSix"
+                                aria-expanded="false" aria-controls="collapseSix" style="text-align: center;">
+                                FAQ (Frequently Asked Questions)
+                            </h5>
+                        </h5>
+                    </div>
+                    <div id="collapseSix" class="collapse" aria-labelledby="headingSix" data-parent="#accordion">
+                        <div class="card-body">
+                            <p class="text-muted">
+                                <strong>Q1:</strong> Do I need an internet connection to use MAISCAN?
+                                <br>
+                                <strong>A:</strong> Yes, MAISCAN requires internet access to upload images and process data online.
+                                <br>
+                                <br>
+                                <strong>Q2:</strong> What if my image isn't clear?
+                                <br>
+                                <strong>A:</strong> Clear, well-lit images give more accurate results. Blurry or dark images may lead
+                                to inaccurate detection.
+                                <br>
+                                <br>
+                                <strong>Q3:</strong> Can MAISCAN detect all types of pests and diseases?
+                                <br>
+                                <strong>A:</strong> MAISCAN detects visible signs of common corn plant diseases and pests. It doesn't
+                                analyze internal or invisible damage.
+                                <br>
+                                <br>
+                                <strong>Q4:</strong> How does the corn sorter (MAISORT) work?
+                                <br>
+                                <strong>A:</strong> MAISORT uses a sensor to detect corn size and servo motors to sort corn into
+                                small, medium, or large bins.
+                                <br>
+                                <br>
+                                <strong>Q5:</strong> Is MAISCAN free to use?
+                                <br>
+                                <strong>A:</strong> Yes! The platform is designed for farmers and is free for use during the current
+                                deployment phase.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="card">
+                    <div class="card-header" id="headingEight" style="border-color: #ffc800;">
+                        <h5 class="mb-0">
+                            <h5 class="section-subheading text-muted" data-toggle="collapse" data-target="#collapseEight"
+                                aria-expanded="false" aria-controls="collapseEight" style="text-align: center;">
+                                Our Team
+                            </h5>
+                        </h5>
+                    </div>
+                    <div id="collapseEight" class="collapse" aria-labelledby="headingEight" data-parent="#accordion">
+                        <div class="card-body">
+                            <p class="text-muted">
+                                We are a team of IT students. We created MAISCAN
+                                to empower local farmers with smart, affordable, and easy-to-use technology. Our goal is to make
+                                farming more productive, sustainable, and informed through technology that matters.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team-->
+    <!-- <section class="page-section bg-light" id="team">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-heading text-uppercase">Our A-MAIS-ing Team</h2>
+                <h3 class="section-subheading text-muted">The people behind this amazing project.</h3>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="team-member">
+                        <img class="mx-auto rounded-circle" src="../static/assets/img/team/88.png" alt="Albufera" />
+                        <h4>John Luis Albufera</h4>
+                        <p class="text-muted">Project Developer</p>
+                        <a class="btn btn-dark btn-social mx-2" href="https://www.facebook.com/itslowes"
+                            aria-label="John Luis Albufera Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="team-member">
+                        <img class="mx-auto rounded-circle" src="../static/assets/img/team/888.png" alt="Dairo" />
+                        <h4>Chyryle Joy Dairo</h4>
+                        <p class="text-muted">Project Manager</p>
+                        <a class="btn btn-dark btn-social mx-2" href="https://www.facebook.com/saymyname.happi"
+                            aria-label="Jun Rey Paynandsos Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="team-member">
+                        <img class="mx-auto rounded-circle" src="../static/assets/img/team/8888.png" alt="Omolida" />
+                        <h4>Rafaello Kotaro Omolida</h4>
+                        <p class="text-muted">Project Member</p>
+                        <a class="btn btn-dark btn-social mx-2"
+                            href="https://www.facebook.com/Kotarooooo.II"
+                            aria-label="Allan Royce Gabayno Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <p class="large text-muted">We are Information Technology students from Mindoro State
+                        University - Main Campus, College of Computer Studies.</p>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+
+    <!-- Footer-->
+    <footer class="footer py-5 bg-dark text-white">
+    <div class="container">
+        <div class="row">
+
+            <!-- About MAISCAN -->
+            <div class="col-md-4 mb-4">
+                <h5 class="text-uppercase">About MAISCAN</h5>
+                <p class="small">
+                    MAISCAN is an IoT-based system that integrates corn sorting with disease and pest prediction 
+                    using MobileNet CNN technology. It provides farmers with accurate, real-time insights to 
+                    improve crop health and productivity.
+                </p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="col-md-4 mb-4">
+                <h5 class="text-uppercase">Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a class="text-yellow text-decoration-none" href="#dashboard">DASHBOARD</a></li>
+                    <li><a class="text-yellow text-decoration-none" href="#scan">MAISCAN</a></li>
+                    <li><a class="text-yellow text-decoration-none" href="#corn">MAISORT</a></li>
+                    <li><a class="text-yellow text-decoration-none" href="#portfolio">DISEASE</a></li>
+                    <li><a class="text-yellow text-decoration-none" href="{{ url_for('logout') }}">LOGOUT</a></li>
+                </ul>
+            </div>
+
+            <!-- Organization -->
+            <div class="col-md-4 mb-4">
+                <h5 class="text-uppercase">Organization</h5>
+                <p class="small">
+                    Developed for <strong>Pinagsabangan 1 Vegetable Growers Association</strong> of Naujan, Oriental Mindoro in collaboration with IT a-mais-ing students.  
+                    Our mission is to empower farmers with innovative technologies for sustainable agriculture.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Bottom Text -->
+        <div class="text-center mt-4">
+            <small>© 2025 MAISCAN | All Rights Reserved</small>
+        </div>
+    </div>
+</footer>
+
+
+
+    <!-- Portfolio Modals-->
+    <!-- Portfolio item 1 modal popup-->
+    <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-bs-dismiss="modal"><img
+                        src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="modal-body">
+                                <!-- Project details-->
+                                <h2 class="text-uppercase">Armyworm</h2>
+                                <p class="item-intro text-muted">This corn plant has been affected by armyworm infestation.</p>
+                                <img class="img-fluid d-block mx-auto" src="../static/assets/img/aw.jpg"
+                                    alt="armyworm" />
+                                <p style="text-align: justify; text-justify: inter-word;">Armyworms are destructive caterpillars that are the larvae of several moth species, primarily Spodoptera frugiperda (Fall Armyworm). These pests are called "armyworms" because they move across fields in large groups, consuming crops as they advance. They are highly mobile and can cause significant damage to corn plants by feeding on leaves, stems, and developing ears. Armyworms are particularly problematic because of their rapid reproduction rate and ability to develop resistance to pesticides. They thrive in warm, humid conditions and can complete multiple generations per growing season, making them a persistent threat to corn production worldwide.</p>
+                                <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                    <li>
+                                        <strong style="text-align: center;">Symptoms:</strong>
+                                    <li>Large, irregular holes or "window-pane" feeding patterns on corn leaves where caterpillars consume the leaf tissue between veins. Young larvae create small holes, while older larvae cause extensive defoliation. Damaged leaves may appear shredded or skeletonized. In severe infestations, armyworms can completely strip plants of foliage. They may also tunnel into the whorl of young plants, causing the characteristic "shot-hole" appearance when leaves unfurl. Additionally, armyworms can feed on developing ears, creating entry points for secondary infections and reducing grain quality. Fresh frass (caterpillar droppings) near damaged areas is another telltale sign of armyworm presence.</li>
+                                    </li>
+                                    <br>
+                                    <li>
+                                        <strong>Management:</strong>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Plant Bt corn varieties (genetically modified corn that produces proteins toxic to armyworms) for effective biological control.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Regular scouting and monitoring of fields, especially during peak moth flight periods, to detect early infestations.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Use pheromone traps to monitor adult moth populations and time control measures appropriately.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Apply targeted insecticides when economic thresholds are reached, rotating different modes of action to prevent resistance.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Encourage natural enemies such as parasitic wasps, ground beetles, and birds through habitat management and reduced broad-spectrum pesticide use.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Practice crop rotation with non-host plants to break the pest cycle and reduce overwintering populations.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Maintain proper field sanitation by removing crop residues and controlling weeds that serve as alternative hosts.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Time planting to avoid peak armyworm activity periods when possible, and ensure optimal plant nutrition for better pest tolerance.</li>
+                                    </li>
+                                </ul>
+                                <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal"
+                                    type="button">
+                                    <i class="fas fa-xmark me-1"></i>
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Portfolio item 2 modal popup-->
+    <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-bs-dismiss="modal"><img
+                        src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="modal-body">
+                                <!-- Project details-->
+                                <h2 class="text-uppercase">Aphids</h2>
+                                <p class="item-intro text-muted">This corn plant has been infested with aphids.</p>
+                                <img class="img-fluid d-block mx-auto" src="../static/assets/img/aphids.jpg"
+                                    alt="aphids" />
+                                <p style="text-align: justify; text-justify: inter-word;">Aphids are small, soft-bodied insects that feed on corn plants by piercing plant tissues and sucking out the sap. The most common species affecting corn include the corn leaf aphid (Rhopalosiphum maidis), bird cherry-oat aphid (Rhopalosiphum padi), and English grain aphid (Sitobion avenae). These tiny pests are typically green, yellow, or black in color and measure only 1-4 millimeters in length. Aphids reproduce rapidly and can form large colonies on corn plants, particularly during cool, mild weather conditions. They not only cause direct damage through feeding but also serve as vectors for various viral diseases, making them a significant concern for corn production.</p>
+                                <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                    <li>
+                                        <strong style="text-align: center;">Symptoms:</strong>
+                                    <li>Yellowing and curling of corn leaves due to continuous sap extraction by aphids. Stunted plant growth and reduced vigor as nutrients are diverted from normal plant development. Presence of sticky honeydew secretions on leaves, which can lead to the development of black sooty mold fungus. Large colonies of small, soft-bodied insects visible on the undersides of leaves, along leaf veins, and in the whorl area of young plants. Shiny or silvery appearance on leaf surfaces where feeding has occurred. In severe infestations, premature leaf drop may occur, and plants may show signs of wilting despite adequate soil moisture. Additionally, aphids can transmit viral diseases such as maize dwarf mosaic virus, which can cause further symptoms including mosaic patterns and stunting.</li>
+                                    </li>
+                                    <br>
+                                    <li>
+                                        <strong>Management:</strong>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Encourage beneficial insects such as ladybugs, lacewings, parasitic wasps, and syrphid flies that naturally control aphid populations.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Apply insecticidal soaps or horticultural oils for organic control options that suffocate aphids without harming beneficial insects.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Use reflective mulches around plants to confuse and deter aphids from landing on corn plants.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Apply targeted systemic insecticides when economic thresholds are exceeded, focusing on selective products that minimize harm to beneficial species.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Regular monitoring and scouting of fields, especially during early growing seasons when aphid populations typically build up.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Remove weedy alternate hosts around field margins that can harbor aphids and serve as sources of infestation.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Plant resistant or tolerant corn varieties when available, and maintain proper plant nutrition to improve plant resilience.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Use yellow sticky traps for monitoring aphid populations and detecting early infestations before they become problematic.</li>
+                                    </li>
+                                </ul>
+                                <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal"
+                                    type="button">
+                                    <i class="fas fa-xmark me-1"></i>
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Portfolio item 3 modal popup-->
+    <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-bs-dismiss="modal"><img
+                        src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="modal-body">
+                                <!-- Project details-->
+                                <h2 class="text-uppercase">Common Cutworm</h2>
+                                <p class="item-intro text-muted">This corn plant has been damaged by common cutworm.</p>
+                                <img class="img-fluid d-block mx-auto" src="../static/assets/img/cw.png"
+                                    alt="common cutworm" />
+                                <p style="text-align: justify; text-justify: inter-word;">Common cutworms are the larvae of various moth species, primarily Agrotis ipsilon (black cutworm) and other Agrotis species. These caterpillars are typically gray, brown, or black in color and can grow up to 2 inches in length. They are called "cutworms" because of their characteristic behavior of cutting through plant stems at or near the soil surface, often completely severing young plants. Cutworms are nocturnal feeders that hide in soil or under plant debris during the day and emerge at night to feed. They are most problematic during the early growing season when corn plants are young and vulnerable, and can cause significant stand reduction if not properly managed.</p>
+                                <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                    <li>
+                                        <strong style="text-align: center;">Symptoms:</strong>
+                                    <li>The most characteristic symptom is plants that are cut off at or near the soil surface, appearing as if they were severed with scissors. Young corn seedlings may be completely cut through and toppled over, while older plants may show partial cutting or gouging of stems. Missing plants or gaps in rows where seedlings have been completely consumed or cut down. Wilted or dying plants with damaged stems that may still be partially attached. Irregular holes chewed in leaves of plants that haven't been completely severed. Evidence of feeding damage on plant crowns and root systems. The presence of plump, smooth caterpillars (1-2 inches long) that curl into a C-shape when disturbed, typically found by digging around damaged plants or under soil clods and debris near the affected area.</li>
+                                    </li>
+                                    <br>
+                                    <li>
+                                        <strong>Management:</strong>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Create physical barriers around individual plants using cardboard collars, paper cups, or aluminum foil extending 2-3 inches above and below soil level.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Apply beneficial nematodes (Steinernema carpocapsae) to soil as a biological control agent that parasitizes cutworm larvae.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Use Bt (Bacillus thuringiensis) sprays applied in the evening when cutworms are active, targeting the soil surface and lower plant stems.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Practice clean cultivation by removing weeds and plant debris where cutworms overwinter and lay eggs, especially before planting.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Delay planting until soil temperatures are consistently warm, as this reduces cutworm survival and activity periods.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Apply targeted soil insecticides or seed treatments when cutworm populations are detected through monitoring and scouting.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Encourage natural predators such as ground beetles, birds, and parasitic wasps by maintaining habitat diversity around field margins.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Monitor fields regularly, especially during evening hours, and hand-pick cutworms when populations are low and manageable.</li>
+                                    </li>
+                                </ul>
+                                <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal"
+                                    type="button">
+                                    <i class="fas fa-xmark me-1"></i>
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Portfolio item 4 modal popup-->
+    <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-bs-dismiss="modal"><img
+                        src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="modal-body">
+                                <!-- Project details-->
+                                <h2 class="text-uppercase">Common Rust</h2>
+                                <p class="item-intro text-muted">This corn leaf has been infected with common rust disease.</p>
+                                <img class="img-fluid d-block mx-auto" src="../static/assets/img/rust.jpg"
+                                    alt="common rust" />
+                                <p style="text-align: justify; text-justify: inter-word;">Common rust is a fungal disease caused by Puccinia sorghi that primarily affects corn plants. This disease is characterized by the formation of distinctive rust-colored pustules on corn leaves and other plant parts. The fungus requires two different host plants to complete its life cycle - corn serves as the primary host, while wood sorrel (Oxalis species) acts as the alternate host. Common rust thrives in moderate temperatures (60-77°F) with high humidity and frequent dew formation. The disease is spread through airborne spores and can develop rapidly under favorable environmental conditions. While common rust rarely causes severe yield losses in resistant varieties, it can significantly impact photosynthesis and overall plant health in susceptible cultivars.</p>
+                                <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                    <li>
+                                        <strong style="text-align: center;">Symptoms:</strong>
+                                    <li>Small, oval to elongated rust-colored pustules (uredinia) scattered across both upper and lower leaf surfaces, typically measuring 1-3 mm in length. These pustules appear golden to cinnamon-brown and contain masses of rust-colored spores that can be rubbed off easily, leaving a powdery residue on fingers. As the disease progresses, pustules may also appear on leaf sheaths, stalks, and husks. Heavily infected leaves may show yellowing and premature death, starting from the lower leaves and progressing upward. Later in the season, dark brown to black pustules (telia) may develop, which contain overwintering spores. In severe cases, extensive pustule development can reduce the green leaf area significantly, leading to reduced photosynthetic capacity and potential yield impacts.</li>
+                                    </li>
+                                    <br>
+                                    <li>
+                                        <strong>Management:</strong>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Plant resistant corn hybrids that carry genes for resistance to common rust, as this is the most effective and economical control method.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Remove wood sorrel and other Oxalis species from field margins and nearby areas, as these serve as alternate hosts for the rust fungus.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Ensure proper plant spacing and row orientation to promote good air circulation and reduce humidity levels around plants.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Apply foliar fungicides containing active ingredients like azoxystrobin, propiconazole, or tebuconazole when disease pressure is high and weather conditions favor development.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Practice crop rotation with non-host crops to reduce inoculum buildup in the field environment.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Monitor weather conditions and apply preventive treatments during periods of moderate temperatures and high humidity.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Remove and destroy infected plant debris after harvest to reduce overwintering spore sources.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Maintain balanced nutrition, particularly adequate potassium levels, to enhance plant resistance to fungal infections.</li>
+                                    </li>
+                                </ul>
+                                <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal"
+                                    type="button">
+                                    <i class="fas fa-xmark me-1"></i>
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Portfolio item 5 modal popup-->
+    <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="close-modal" data-bs-dismiss="modal"><img
+                        src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="modal-body">
+                                <!-- Project details-->
+                                <h2 class="text-uppercase">Common Smut</h2>
+                                <p class="item-intro text-muted">This corn plant has been infected with common smut disease.</p>
+                                <img class="img-fluid d-block mx-auto" src="../static/assets/img/smut.jpg"
+                                    alt="common smut" />
+                                <p style="text-align: justify; text-justify: inter-word;">Common smut, also known as corn smut, is a fungal disease caused by Ustilago maydis. This unique pathogen creates distinctive large, tumor-like galls that can form on any above-ground part of the corn plant, including ears, tassels, leaves, and stalks. The fungus is an obligate parasite that can only complete its life cycle on living corn tissue. Interestingly, while considered a disease in most agricultural contexts, corn smut is actually considered a delicacy (called "huitlacoche") in Mexican cuisine. The disease is favored by warm, dry weather followed by periods of moisture, and mechanical injuries to plants can provide entry points for infection. Common smut rarely causes significant yield losses in field corn but can be problematic in sweet corn production.</p>
+                                <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                    <li>
+                                        <strong style="text-align: center;">Symptoms:</strong>
+                                    <li>The most characteristic symptom is the formation of large, irregular galls or tumor-like swellings that can appear on ears, kernels, tassels, leaves, stalks, and nodes. These galls are initially white to silver in color and covered by a smooth membrane. As they mature, galls become increasingly large (up to several inches in diameter) and turn grayish-black as they fill with millions of dark, powdery spores called teliospores. When mature, the galls rupture and release masses of black, sooty spores that can easily spread to other plants. Infected plant parts may show stunted growth, and ear galls can completely replace normal kernel development. The galls have a spongy, soft texture initially but become dry and papery when mature and spore-filled.</li>
+                                    </li>
+                                    <br>
+                                    <li>
+                                        <strong>Management:</strong>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Remove and destroy infected galls before they mature and release spores, ideally when they are still white and haven't turned black.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Plant resistant or tolerant corn varieties when available, though complete resistance is rare due to the nature of the pathogen.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Avoid mechanical injuries to plants during cultivation and other field operations, as wounds provide entry points for infection.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Maintain balanced fertility, particularly avoiding excessive nitrogen applications which can increase plant susceptibility.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Practice crop rotation with non-host crops, although smut spores can survive in soil for several years.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Control insect pests that can create wounds and entry points for smut infection through their feeding activities.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Clean equipment and tools that may carry spores from infected fields to prevent spread to healthy areas.</li>
+                                    <li style="list-style-type: circle; list-style-position: inside;">
+                                        Monitor fields regularly and remove infected plants or plant parts promptly to reduce inoculum sources for future infections.</li>
+                                    </li>
+                                </ul>
+                                <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal"
+                                    type="button">
+                                    <i class="fas fa-xmark me-1"></i>
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Portfolio item 6 modal popup-->
+    <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="close-modal" data-bs-dismiss="modal"><img
+                    src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="modal-body">
+                            <!-- Project details-->
+                            <h2 class="text-uppercase">Corn Borer</h2>
+                            <p class="item-intro text-muted">This corn plant has been damaged by the feeding of the Asian corn borer.</p>
+                            <img class="img-fluid d-block mx-auto" src="../static/assets/img/borer.jpg"
+                                alt="corn borer" />
+                            <p style="text-align: justify; text-justify: inter-word;">
+                                The Asian corn borer (<i>Ostrinia furnacalis</i>) is one of the most destructive insect pests of corn in Asia. 
+                                It belongs to the order Lepidoptera and family Crambidae. Adult moths are yellowish-brown with irregular black markings on their wings, while the larvae are whitish to pinkish caterpillars with dark heads. 
+                                The larvae bore into stems, tassels, and ears, causing structural damage and reducing yield. 
+                                Heavy infestations can cause lodging (plants falling over), poor grain development, and reduced harvest quality. 
+                                The pest undergoes complete metamorphosis (egg, larva, pupa, adult) and can produce multiple generations per year.
+                            </p>
+                            <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                <li>
+                                    <strong style="text-align: center;">Symptoms:</strong>
+                                <li>
+                                    Presence of egg masses laid on the underside of corn leaves, usually overlapping like fish scales. 
+                                    Small, round holes in leaves and “shot hole” appearance as larvae feed on young tissue. 
+                                    Boring into stalks, tassels, and ears, weakening the plant and interfering with nutrient transport. 
+                                    Frass (sawdust-like excrement) visible near entry holes where larvae bore into stems or ears. 
+                                    Poor grain filling and ear development due to feeding damage in reproductive structures. 
+                                    Increased lodging of corn plants due to weakened stalks.
+                                </li>
+                                </li>
+                                <br>
+                                <li>
+                                    <strong>Management:</strong>
+                                <li style="list-style-type: circle; list-style-position: inside;">
+                                    Monitor fields regularly for egg masses and early signs of larval feeding damage.</li>
+                                <li style="list-style-type: circle; list-style-position: inside;">
+                                    Destroy and remove crop residues after harvest to reduce overwintering larvae and pupae.</li>
+                                <li style="list-style-type: circle; list-style-position: inside;">
+                                    Plant resistant or genetically modified (Bt) corn varieties to minimize infestation.</li>
+                                <li style="list-style-type: circle; list-style-position: inside;">
+                                    Encourage natural predators and parasitoids, such as <i>Trichogramma</i> wasps, which parasitize corn borer eggs.</li>
+                                <li style="list-style-type: circle; list-style-position: inside;">
+                                    Apply recommended biological control agents like <i>Beauveria bassiana</i> or nucleopolyhedrovirus (NPV) where available.</li>
+                                <li style="list-style-type: circle; list-style-position: inside;">
+                                    Use insecticides (e.g., pyrethroids or carbamates) only when monitoring indicates economic threshold levels are reached.</li>
+                                <li style="list-style-type: circle; list-style-position: inside;">
+                                    Practice crop rotation with non-host plants to break the pest’s life cycle.</li>
+                                <li style="list-style-type: circle; list-style-position: inside;">
+                                    Implement proper field sanitation and early planting to reduce pest buildup.</li>
+                                </li>
+                            </ul>
+                            <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal"
+                                type="button">
+                                <i class="fas fa-xmark me-1"></i>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="portfolio-modal modal fade" id="portfolioModal7" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="close-modal" data-bs-dismiss="modal"><img
+                    src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="modal-body">
+                            <!-- Project details-->
+                            <h2 class="text-uppercase">Earwig</h2>
+                            <p class="item-intro text-muted">This corn plant has been damaged by earwig feeding.</p>
+                            <img class="img-fluid d-block mx-auto" src="../static/assets/img/ew.jpg"
+                                alt="Earwig" />
+                            <p style="text-align: justify; text-justify: inter-word;">
+                                Earwigs are elongated, flattened insects belonging to the order Dermaptera, 
+                                easily recognized by their distinctive pincer-like appendages (cerci) at the rear of their bodies. 
+                                The most common species affecting corn is the European earwig (<i>Forficula auricularia</i>). 
+                                These nocturnal insects are typically brown to dark brown and measure about 12–15 mm in length. 
+                                While they can be beneficial by feeding on other pests, they also damage corn seedlings, silks, 
+                                and sometimes kernels, especially under moist conditions.
+                            </p>
+                            <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                <li><strong>Symptoms:</strong></li>
+                                <li>Ragged, irregular holes chewed in corn leaves, especially on seedlings and tender tissues.</li>
+                                <li>Damaged corn silks, leading to poor pollination and kernel development.</li>
+                                <li>Chewed leaf margins and tips, giving leaves a tattered appearance.</li>
+                                <li>Small, round holes in developing kernels when earwigs enter ears.</li>
+                                <li>Damage often appears overnight, sometimes with a slight slime trail.</li>
+                                <br>
+                                <li><strong>Management:</strong></li>
+                                <li style="list-style-type: circle;">Create simple traps using rolled newspapers, cardboard tubes, or straw-filled pots.</li>
+                                <li style="list-style-type: circle;">Remove plant debris, mulch, and other hiding places near corn plants.</li>
+                                <li style="list-style-type: circle;">Improve field drainage and reduce excessive moisture.</li>
+                                <li style="list-style-type: circle;">Apply diatomaceous earth around plant bases as a natural deterrent.</li>
+                                <li style="list-style-type: circle;">Use insecticides (carbaryl, pyrethrin) in the evening if infestations are severe.</li>
+                                <li style="list-style-type: circle;">Encourage natural predators such as birds, toads, and ground beetles.</li>
+                                <li style="list-style-type: circle;">Hand-pick earwigs during early morning or evening hours.</li>
+                                <li style="list-style-type: circle;">Apply sticky barriers around plant stems to block climbing earwigs.</li>
+                            </ul>
+                            <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                <i class="fas fa-xmark me-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="portfolio-modal modal fade" id="portfolioModal8" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="close-modal" data-bs-dismiss="modal"><img
+                    src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="modal-body">
+                            <!-- Project details-->
+                            <h2 class="text-uppercase">Fusarium Ear Rot</h2>
+                            <p class="item-intro text-muted">This fungal disease infects corn ears and reduces grain quality.</p>
+                            <img class="img-fluid d-block mx-auto" src="../static/assets/img/fer.jpg"
+                                alt="Fusarium Ear Rot" />
+                            <p style="text-align: justify; text-justify: inter-word;">
+                                Fusarium ear rot is caused by fungi of the genus <i>Fusarium</i>, most commonly 
+                                <i>Fusarium verticillioides</i> and <i>Fusarium proliferatum</i>. 
+                                These fungi infect kernels through silk channels or ear damage caused by insects. 
+                                Besides reducing grain quality and yield, this disease is a serious concern 
+                                because it produces mycotoxins (fumonisins) that are harmful to humans and livestock. 
+                                Infection is more severe in hot, dry conditions or in fields with insect injury. 
+                            </p>
+                            <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                <li><strong>Symptoms:</strong>
+                                <li>Whitish to pink or reddish mold growth on kernels, usually starting at the ear tip or damaged areas.</li>
+                                <li>Kernels appear lightweight, shriveled, or discolored (white, pink, or reddish).</li>
+                                <li>Contaminated ears may produce harmful mycotoxins, even when visual symptoms are minimal.</li>
+                                </li>
+                                <br>
+                                <li><strong>Management:</strong>
+                                <li style="list-style-type: circle;">Plant resistant hybrids when available.</li>
+                                <li style="list-style-type: circle;">Control insect pests like corn borers to reduce kernel injury.</li>
+                                <li style="list-style-type: circle;">Harvest early to prevent fungal spread in the field.</li>
+                                <li style="list-style-type: circle;">Dry harvested grain quickly to below 15% moisture and store properly.</li>
+                                <li style="list-style-type: circle;">Rotate crops with non-host plants (e.g., soybean).</li>
+                                <li style="list-style-type: circle;">Avoid planting corn continuously in the same field.</li>
+                                </li>
+                            </ul>
+                            <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                <i class="fas fa-xmark me-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="portfolio-modal modal fade" id="portfolioModal9" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="close-modal" data-bs-dismiss="modal"><img
+                    src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="modal-body">
+                            <!-- Project details-->
+                            <h2 class="text-uppercase">Gray Leaf Spot</h2>
+                            <p class="item-intro text-muted">This fungal disease reduces photosynthesis and yield by damaging leaves.</p>
+                            <img class="img-fluid d-block mx-auto" src="../static/assets/img/spot.jpg"
+                                alt="Gray Leaf Spot" />
+                            <p style="text-align: justify; text-justify: inter-word;">
+                                Gray leaf spot is caused by the fungus <i>Cercospora zeae-maydis</i>. 
+                                It is one of the most common and economically damaging foliar diseases of corn worldwide. 
+                                The disease thrives in warm, humid conditions and dense canopies with poor airflow. 
+                                Severe infections reduce photosynthesis by destroying leaf tissue, leading to reduced kernel fill and yield loss.
+                            </p>
+                            <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                <li><strong>Symptoms:</strong>
+                                <li>Rectangular, gray to tan lesions running parallel to leaf veins.</li>
+                                <li>Lesions start small, water-soaked, and elongate into narrow streaks.</li>
+                                <li>In severe cases, lesions coalesce, killing large areas of leaf tissue.</li>
+                                <li>Premature leaf death leads to poor grain fill and smaller ears.</li>
+                                </li>
+                                <br>
+                                <li><strong>Management:</strong>
+                                <li style="list-style-type: circle;">Rotate crops with non-host plants to reduce inoculum.</li>
+                                <li style="list-style-type: circle;">Use resistant corn hybrids when available.</li>
+                                <li style="list-style-type: circle;">Avoid dense planting and ensure good airflow in the field.</li>
+                                <li style="list-style-type: circle;">Apply fungicides (e.g., strobilurins, triazoles) at VT–R1 stage if disease pressure is high.</li>
+                                <li style="list-style-type: circle;">Incorporate crop residues after harvest to reduce fungal survival.</li>
+                                </li>
+                            </ul>
+                            <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                <i class="fas fa-xmark me-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="portfolio-modal modal fade" id="portfolioModal10" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="close-modal" data-bs-dismiss="modal"><img
+                    src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="modal-body">
+                            <!-- Project details-->
+                            <h2 class="text-uppercase">Healthy Corn</h2>
+                            <p class="item-intro text-muted">This represents a corn plant with no visible signs of pests or diseases.</p>
+                            <img class="img-fluid d-block mx-auto" src="../static/assets/img/corn.jpg"
+                                alt="Healthy Corn" />
+                            <p style="text-align: justify; text-justify: inter-word;">
+                                Healthy corn plants exhibit strong stalks, well-developed leaves, and properly filled ears. 
+                                Plants are free from pest damage, disease lesions, and nutrient deficiencies. 
+                                Vigorous growth and uniform green coloration indicate good crop management and favorable growing conditions.
+                            </p>
+                            <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                <li><strong>Key Features:</strong></li>
+                                <li>Bright green, broad leaves with no lesions or discoloration.</li>
+                                <li>Strong stalks resistant to lodging.</li>
+                                <li>Well-developed ears with uniform kernel rows.</li>
+                                <li>Absence of insect damage or fungal growth.</li>
+                                <br>
+                                <li><strong>Good Practices:</strong></li>
+                                <li style="list-style-type: circle;">Use high-quality seeds and resistant hybrids.</li>
+                                <li style="list-style-type: circle;">Apply balanced fertilizers and proper irrigation.</li>
+                                <li style="list-style-type: circle;">Maintain crop rotation to prevent soil-borne diseases.</li>
+                                <li style="list-style-type: circle;">Regularly scout fields to ensure early detection of issues.</li>
+                            </ul>
+                            <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                <i class="fas fa-xmark me-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="portfolio-modal modal fade" id="portfolioModal11" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="close-modal" data-bs-dismiss="modal"><img
+                    src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="modal-body">
+                            <!-- Project details-->
+                            <h2 class="text-uppercase">Healthy Leaf</h2>
+                            <p class="item-intro text-muted">This leaf shows no symptoms of stress, pest, or disease infection.</p>
+                            <img class="img-fluid d-block mx-auto" src="../static/assets/img/healthy.jpg"
+                                alt="Healthy Leaf" />
+                            <p style="text-align: justify; text-justify: inter-word;">
+                                Healthy corn leaves are broad, dark green, and free from any lesions, spots, or chlorosis. 
+                                Such leaves indicate proper nutrient availability, optimal water supply, and absence of pest or disease pressure.
+                            </p>
+                            <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                <li><strong>Key Features:</strong></li>
+                                <li>Uniform green color with no yellowing or necrotic patches.</li>
+                                <li>Absence of insect feeding marks or fungal spots.</li>
+                                <li>Smooth leaf surfaces with strong photosynthetic activity.</li>
+                                <br>
+                                <li><strong>Good Practices:</strong></li>
+                                <li style="list-style-type: circle;">Ensure adequate nitrogen, potassium, and micronutrients.</li>
+                                <li style="list-style-type: circle;">Use proper irrigation practices to avoid water stress.</li>
+                                <li style="list-style-type: circle;">Control weeds that may compete for nutrients.</li>
+                            </ul>
+                            <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                <i class="fas fa-xmark me-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="portfolio-modal modal fade" id="portfolioModal12" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="close-modal" data-bs-dismiss="modal"><img
+                    src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="modal-body">
+                            <!-- Project details-->
+                            <h2 class="text-uppercase">Leaf Blight</h2>
+                            <p class="item-intro text-muted">This fungal disease reduces photosynthesis by damaging leaves.</p>
+                            <img class="img-fluid d-block mx-auto" src="../static/assets/img/blight.jpg"
+                                alt="Leaf Blight" />
+                            <p style="text-align: justify; text-justify: inter-word;">
+                                Corn leaf blight is caused by fungi such as <i>Exserohilum turcicum</i> (Northern Leaf Blight) 
+                                and <i>Bipolaris maydis</i> (Southern Leaf Blight). These pathogens thrive in warm, humid conditions 
+                                and attack leaves, reducing photosynthetic ability and grain yield. Severe infections can lead to early senescence.
+                            </p>
+                            <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                <li><strong>Symptoms:</strong></li>
+                                <li>Long, elliptical, gray-green to tan lesions running along leaf veins.</li>
+                                <li>Lesions may coalesce, killing large areas of the leaf.</li>
+                                <li>Premature death of leaves leading to yield loss.</li>
+                                <br>
+                                <li><strong>Management:</strong></li>
+                                <li style="list-style-type: circle;">Plant resistant hybrids.</li>
+                                <li style="list-style-type: circle;">Rotate crops with non-host plants.</li>
+                                <li style="list-style-type: circle;">Apply fungicides during tasseling if disease pressure is high.</li>
+                                <li style="list-style-type: circle;">Avoid continuous corn cropping to reduce inoculum buildup.</li>
+                            </ul>
+                            <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                <i class="fas fa-xmark me-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="portfolio-modal modal fade" id="portfolioModal13" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="close-modal" data-bs-dismiss="modal"><img
+                    src="../static/assets/img/circle-xmark-solid (1).svg" alt="Close modal" /></div>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="modal-body">
+                            <!-- Project details-->
+                            <h2 class="text-uppercase">Leafhopper</h2>
+                            <p class="item-intro text-muted">This insect pest feeds on corn sap and transmits plant pathogens.</p>
+                            <img class="img-fluid d-block mx-auto" src="../static/assets/img/lh.jpg"
+                                alt="Leafhopper" />
+                            <p style="text-align: justify; text-justify: inter-word;">
+                                Leafhoppers (family Cicadellidae) are small, wedge-shaped insects that feed on plant sap 
+                                using piercing-sucking mouthparts. They weaken corn plants directly by removing nutrients 
+                                and indirectly by transmitting pathogens, including viruses and phytoplasmas. 
+                                Heavy infestations can cause hopperburn (leaf yellowing and curling).
+                            </p>
+                            <ul class="list-inline" style="text-align: justify; text-justify: inter-word;">
+                                <li><strong>Symptoms:</strong></li>
+                                <li>Yellowing or browning (hopperburn) of leaf edges.</li>
+                                <li>Leaf curling, stunting, and reduced plant vigor.</li>
+                                <li>Possible transmission of maize stunt pathogens.</li>
+                                <br>
+                                <li><strong>Management:</strong></li>
+                                <li style="list-style-type: circle;">Plant resistant or tolerant hybrids.</li>
+                                <li style="list-style-type: circle;">Control weeds that serve as alternate hosts.</li>
+                                <li style="list-style-type: circle;">Use insecticides if economic threshold levels are reached.</li>
+                                <li style="list-style-type: circle;">Encourage natural predators such as lady beetles and spiders.</li>
+                            </ul>
+                            <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                <i class="fas fa-xmark me-1"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="modal fade" id="uploadHistoryModal" tabindex="-1" aria-labelledby="uploadHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="uploadHistoryModalLabel">
+                        <i class="fas fa-history me-2"></i>{{ current_user.username }}'s Upload History
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Loading Indicator -->
+                    <div id="loadingIndicator">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading data...</p>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="row mb-4 g-3">
+                        <div class="col-md-3">
+                            <label for="filterDisease" class="form-label">Disease Type</label>
+                            <select id="filterDisease" class="form-select">
+                                <option value="">All Diseases</option>
+                                {% for disease in disease_types %}
+                                <option value="{{ disease }}">{{ disease }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterDateFrom" class="form-label">Date From</label>
+                            <input type="date" id="filterDateFrom" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterDateTo" class="form-label">Date To</label>
+                            <input type="date" id="filterDateTo" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label d-block">Quick Filters</label>
+                            <div class="btn-group w-100">
+                                <button type="button" class="btn btn-outline-success" data-range="today">Today</button>
+                                <button type="button" class="btn btn-outline-success" data-range="week">This Week</button>
+                                <button type="button" class="btn btn-outline-success" data-range="month">This Month</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export Buttons -->
+                    <div class="export-buttons">
+                        <button class="btn btn-success btn-sm" onclick="exportTableToCSV()">
+                            <i class="fas fa-file-csv me-1"></i> Export to CSV
+                        </button>
+                        <button class="btn btn-primary btn-sm ms-2" onclick="printTable()">
+                            <i class="fas fa-print me-1"></i> Print
+                        </button>
+                    </div>
+    
+                    <!-- Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover w-100" id="uploadTable">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Upload Date</th>
+                                    <th>Disease Type</th>
+                                    <th>Confidence</th>
+                                </tr>
+                            </thead>
+                            <tbody id="uploadTableBody">
+                                <!-- Data will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination and Results Count -->
+                    <div class="pagination-container">
+                        <span id="resultCount">Loading data...</span>
+                        <div>
+                            <span>Rows per page: </span>
+                            <select id="rowsPerPage" class="form-select d-inline-block w-auto">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button class="page-button" id="prevPage" disabled>Previous</button>
+                            <span class="mx-2" id="pageInfo">Page 1 of 1</span>
+                            <button class="page-button" id="nextPage" disabled>Next</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Modal -->
+<!-- Account Modal -->
+<div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0 rounded-3">
+      
+      <!-- Header -->
+      <div class="modal-header bg-warning text-dark border-0 rounded-top">
+        <h5 class="modal-title fw-bold text-uppercase" id="accountModalLabel">
+          <i class="fas fa-user-edit me-2"></i> Edit Account
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <!-- Form -->
+      <form id="accountForm" method="POST" action="{{ url_for('update_account') }}">
+        <div class="modal-body p-4">
+          
+          <!-- Username -->
+          <div class="mb-3">
+            <label for="username" class="form-label fw-semibold text-success">
+              <i class="fas fa-id-badge me-2"></i>Name
+            </label>
+            <input type="text" class="form-control border-success" 
+                   id="username" name="username" 
+                   value="{{ current_user.username or '' }}">
+          </div>
+          
+          <!-- Email -->
+          <div class="mb-3">
+            <label for="email" class="form-label fw-semibold text-success">
+              <i class="fas fa-envelope me-2"></i>Email
+            </label>
+            <input type="email" class="form-control border-success" 
+                   id="email" name="email" 
+                   value="{{ current_user.email }}">
+          </div>
+          
+          <!-- Password -->
+          <div class="mb-3">
+            <label for="password" class="form-label fw-semibold text-success">
+              <i class="fas fa-lock me-2"></i>New Password 
+              <small class="text-muted">(leave blank to keep current)</small>
+            </label>
+            <input type="password" class="form-control border-success" id="password" name="password">
+          </div>
+          
+        </div>
+        
+        <!-- Footer -->
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button type="submit" class="btn btn-success rounded-pill px-4">
+            <i class="fas fa-save me-2"></i>Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="../static/js/scripts.js"></script>
+    <script src="../static/js/camera.js"></script>
+
+    <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Image preview functionality
+        const input = document.getElementById('image-upload');
+        const preview = document.getElementById('image-preview');
+
+        input.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+            }
+
+            reader.readAsDataURL(file);
+        });
+
+let allUploads = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let rowsPerPage = 10;
+
+        // Initialize when document is ready
+        $(document).ready(function() {
+            // Load data when modal is shown
+            $('#uploadHistoryModal').on('shown.bs.modal', function() {
+                if (allUploads.length === 0) {
+                    loadUploadHistory();
+                }
+            });
+            
+            // Set up event listeners
+            $('#rowsPerPage').on('change', function() {
+                rowsPerPage = parseInt($(this).val());
+                currentPage = 1;
+                renderTable();
+            });
+            
+            $('#prevPage').on('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+            
+            $('#nextPage').on('click', function() {
+                if (currentPage < Math.ceil(filteredData.length / rowsPerPage)) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+            
+            // Disease Counts Bar Chart
+            const diseaseData = {
+                labels: {{ disease_counts.keys() | list | tojson }},
+                datasets: [{
+                    label: 'Number of Cases',
+                    data: {{ disease_counts.values() | list | tojson }},
+                    backgroundColor: [
+                        'rgba(231, 76, 60, 0.7)',
+                        'rgba(241, 196, 15, 0.7)',
+                        'rgba(52, 152, 219, 0.7)',
+                        'rgba(46, 204, 113, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                    ],
+                    borderColor: [
+                        'rgba(231, 76, 60, 1)',
+                        'rgba(241, 196, 15, 1)',
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(46, 204, 113, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            };
+
+            const ctx = document.getElementById('diseaseChart').getContext('2d');
+            const diseaseChart = new Chart(ctx, {
+                type: 'bar',
+                data: diseaseData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distribution of Detected Corn Diseases',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Cases'
+                            },
+                            ticks: {
+                                precision: 0
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Disease Type'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Filter functionality
+            $('#filterDisease, #filterDateFrom, #filterDateTo').on('change', function() {
+                filterTable();
+            });
+            
+            // Quick filter buttons
+            $('[data-range]').on('click', function() {
+                const range = $(this).data('range');
+                const today = new Date();
+                let dateFrom, dateTo;
+                
+                if (range === 'today') {
+                    dateFrom = new Date(today);
+                    dateTo = new Date(today);
+                } else if (range === 'week') {
+                    dateFrom = new Date(today);
+                    dateFrom.setDate(today.getDate() - today.getDay());
+                    dateTo = new Date(today);
+                    dateTo.setDate(today.getDate() + (6 - today.getDay()));
+                } else if (range === 'month') {
+                    dateFrom = new Date(today.getFullYear(), today.getMonth(), 1);
+                    dateTo = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                }
+                
+                $('#filterDateFrom').val(formatDate(dateFrom));
+                $('#filterDateTo').val(formatDate(dateTo));
+                
+                filterTable();
+            });
+        });
+
+        // Load upload history from server
+        function loadUploadHistory() {
+            $('#loadingIndicator').show();
+            $('#uploadTableBody').html('');
+            
+            // In a real application, you would fetch this from your server
+            // For demonstration, we'll simulate an API call with a timeout
+            setTimeout(() => {
+                // This would be the response from your server API
+                allUploads = [
+                    {% for upload in uploads %}
+                    { 
+                        filename: "{{ upload.filename }}", 
+                        date: "{{ upload.upload_date.strftime('%Y-%m-%d %H:%M') if upload.upload_date is string else upload.upload_date }}", 
+                        disease: "{{ upload.disease_type }}", 
+                        confidence: {{ upload.confidence }} 
+                    },
+                    {% endfor %}
+                ];
+                
+                filteredData = [...allUploads];
+                $('#loadingIndicator').hide();
+                renderTable();
+            }, 1000);
+        }
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        function filterTable() {
+            const diseaseFilter = $('#filterDisease').val();
+            const dateFrom = $('#filterDateFrom').val();
+            const dateTo = $('#filterDateTo').val();
+            
+            filteredData = allUploads.filter(item => {
+                const matchesDisease = !diseaseFilter || item.disease === diseaseFilter;
+                const itemDate = item.date.split(' ')[0];
+                const matchesDate = (!dateFrom || itemDate >= dateFrom) && (!dateTo || itemDate <= dateTo);
+                
+                return matchesDisease && matchesDate;
+            });
+            
+            currentPage = 1;
+            renderTable();
+        }
+        
+        function renderTable() {
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+            
+            // Clear table
+            $('#uploadTableBody').empty();
+            
+            // Add rows
+            pageData.forEach(item => {
+                let badgeClass = 'bg-secondary';
+                if (item.disease === 'Blight') badgeClass = 'bg-danger';
+                else if (item.disease === 'Rust') badgeClass = 'bg-warning';
+                else if (item.disease === 'Healthy') badgeClass = 'bg-success';
+                else if (item.disease === 'Gray Leaf Spot') badgeClass = 'bg-info';
+                
+                let confidenceClass = 'confidence-high';
+                if (item.confidence < 60) confidenceClass = 'confidence-low';
+                else if (item.confidence < 80) confidenceClass = 'confidence-medium';
+                
+                $('#uploadTableBody').append(`
+                    <tr>
+                        <td>${item.filename}</td>
+                        <td>${item.date}</td>
+                        <td><span class="badge ${badgeClass}">${item.disease}</span></td>
+                        <td class="confidence-cell ${confidenceClass}">${item.confidence}%</td>
+                    </tr>
+                `);
+            });
+            
+            // Update pagination controls
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+            $('#pageInfo').text(`Page ${currentPage} of ${totalPages}`);
+            $('#prevPage').prop('disabled', currentPage === 1);
+            $('#nextPage').prop('disabled', currentPage === totalPages || totalPages === 0);
+            
+            // Update result count
+            const startCount = totalPages > 0 ? startIndex + 1 : 0;
+            const endCount = Math.min(endIndex, filteredData.length);
+            $('#resultCount').text(`Showing ${startCount} to ${endCount} of ${filteredData.length} records`);
+        }
+        
+        // Export to CSV function
+        function exportTableToCSV() {
+            const csv = [];
+            // Add headers
+            csv.push(['Filename', 'Upload Date', 'Disease Type', 'Confidence'].join(','));
+            
+            // Add data rows
+            filteredData.forEach(item => {
+                csv.push([item.filename, item.date, item.disease, item.confidence + '%'].join(','));
+            });
+            
+            // Download CSV file
+            const csvString = csv.join('\n');
+            const a = document.createElement('a');
+            a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvString);
+            a.target = '_blank';
+            a.download = 'upload_history.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        // Print function
+        function printTable() {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>MAISCAN Upload History - Print</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .table { width: 100%; border-collapse: collapse; }
+                        .table th, .table td { border: 1px solid #dee2e6; padding: 8px; }
+                        .table th { background-color: #198754; color: white; }
+                        .badge { padding: 4px 8px; border-radius: 4px; color: white; }
+                        .bg-danger { background-color: #dc3545; }
+                        .bg-warning { background-color: #ffc107; color: #000; }
+                        .bg-success { background-color: #198754; }
+                        .bg-info { background-color: #0dcaf0; color: #000; }
+                        .bg-secondary { background-color: #6c757d; }
+                        .confidence-high { color: #198754; font-weight: bold; }
+                        .confidence-medium { color: #fd7e14; font-weight: bold; }
+                        .confidence-low { color: #dc3545; font-weight: bold; }
+                        h2 { color: #198754; margin-bottom: 20px; }
+                        @media print {
+                            .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h2>MAISCAN Report</h2>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Upload Date</th>
+                                <th>Disease Type</th>
+                                <th>Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `);
+            
+            filteredData.forEach(item => {
+                let badgeClass = 'bg-secondary';
+                if (item.disease === 'Blight') badgeClass = 'bg-danger';
+                else if (item.disease === 'Rust') badgeClass = 'bg-warning';
+                else if (item.disease === 'Healthy') badgeClass = 'bg-success';
+                else if (item.disease === 'Gray Leaf Spot') badgeClass = 'bg-info';
+                
+                let confidenceClass = 'confidence-high';
+                if (item.confidence < 60) confidenceClass = 'confidence-low';
+                else if (item.confidence < 80) confidenceClass = 'confidence-medium';
+                
+                printWindow.document.write(`
+                    <tr>
+                        <td>${item.filename}</td>
+                        <td>${item.date}</td>
+                        <td><span class="badge ${badgeClass}">${item.disease}</span></td>
+                        <td class="${confidenceClass}">${item.confidence}%</td>
+                    </tr>
+                `);
+            });
+            
+            printWindow.document.write(`
+                        </tbody>
+                    </table>
+                    <p>Total Records: ${filteredData.length}</p>
+                    <p>Printed on: ${new Date().toLocaleString()}</p>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
+
+        class CameraDetectionSystem {
+            constructor() {
+                this.currentMode = 'upload';
+                this.stream = null;
+                this.isDetecting = false;
+                this.detectionInterval = null;
+                this.isProcessing = false;
+                
+                // Mode elements
+                this.modeButtons = {
+                    upload: document.getElementById('upload-mode'),
+                    capture: document.getElementById('capture-mode'),
+                    realtime: document.getElementById('realtime-mode')
+                };
+                
+                this.modeSections = {
+                    upload: document.getElementById('upload-section'),
+                    capture: document.getElementById('capture-section'),
+                    realtime: document.getElementById('realtime-section')
+                };
+                
+                // Initialize elements
+                this.initializeElements();
+                this.bindEvents();
+            }
+            
+            initializeElements() {
+                // Upload mode elements
+                this.uploadForm = document.getElementById('upload-form');
+                this.uploadInput = document.getElementById('image-upload');
+                this.uploadPreview = document.getElementById('upload-preview');
+                this.uploadPreviewContainer = document.getElementById('upload-preview-container');
+                
+                // Capture mode elements
+                this.captureVideo = document.getElementById('video-preview');
+                this.captureCanvas = document.getElementById('canvas-preview');
+                this.captureCtx = this.captureCanvas.getContext('2d');
+                this.toggleCameraBtn = document.getElementById('toggle-camera');
+                this.captureBtn = document.getElementById('capture-image');
+                this.capturePreview = document.getElementById('capture-preview');
+                this.capturePreviewContainer = document.getElementById('capture-preview-container');
+                this.analyzeCaptureBtn = document.getElementById('analyze-capture');
+                this.retakeCaptureBtn = document.getElementById('retake-capture');
+                this.captureInfo = document.getElementById('capture-info');
+                this.captureForm = document.getElementById('capture-form');
+                this.captureFileInput = document.getElementById('capture-file-input');
+                
+                // Real-time mode elements
+                this.realtimeVideo = document.getElementById('realtime-video');
+                this.realtimeCanvas = document.getElementById('realtime-canvas');
+                this.realtimeCtx = this.realtimeCanvas.getContext('2d');
+                this.toggleRealtimeCameraBtn = document.getElementById('toggle-realtime-camera');
+                this.toggleDetectionBtn = document.getElementById('toggle-detection');
+                this.realtimeInfo = document.getElementById('realtime-info');
+                this.realtimeStatus = document.getElementById('realtime-status');
+                this.autoCaptureCheckbox = document.getElementById('auto-capture-mode');
+                
+                // Results
+                this.resultContainer = document.getElementById('result-container');
+                this.predictionResult = document.getElementById('prediction-result');
+            }
+            
+            bindEvents() {
+                // Mode selection
+                this.modeButtons.upload.addEventListener('click', () => this.setMode('upload'));
+                this.modeButtons.capture.addEventListener('click', () => this.setMode('capture'));
+                this.modeButtons.realtime.addEventListener('click', () => this.setMode('realtime'));
+                
+                // Upload mode events
+                this.uploadInput.addEventListener('change', (e) => this.handleFileUpload(e));
+                
+                // Capture mode events
+                this.toggleCameraBtn.addEventListener('click', () => this.toggleCamera());
+                this.captureBtn.addEventListener('click', () => this.captureImage());
+                this.analyzeCaptureBtn.addEventListener('click', () => this.analyzeCapturedImage());
+                this.retakeCaptureBtn.addEventListener('click', () => this.retakeCapture());
+                
+                // Real-time mode events
+                this.toggleRealtimeCameraBtn.addEventListener('click', () => this.toggleRealtimeCamera());
+                this.toggleDetectionBtn.addEventListener('click', () => this.toggleDetection());
+            }
+            
+            setMode(mode) {
+                // Reset all modes
+                Object.values(this.modeSections).forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                Object.values(this.modeButtons).forEach(button => {
+                    button.className = button.className.replace('btn-primary', 'btn-secondary');
+                });
+                
+                // Stop any active camera streams
+                if (mode !== this.currentMode) {
+                    this.stopAllCameras();
+                }
+                
+                // Set new mode
+                this.currentMode = mode;
+                this.modeSections[mode].style.display = 'block';
+                this.modeButtons[mode].className = this.modeButtons[mode].className.replace('btn-secondary', 'btn-primary');
+                
+                // Hide results when switching modes
+                this.resultContainer.style.display = 'none';
+            }
+            
+            stopAllCameras() {
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+                
+                // Reset capture mode
+                this.captureVideo.srcObject = null;
+                this.captureInfo.style.display = 'none';
+                this.toggleCameraBtn.innerHTML = '<i class="fas fa-play"></i> Start Camera';
+                this.toggleCameraBtn.className = 'btn btn-primary';
+                this.captureBtn.disabled = true;
+                
+                // Reset real-time mode
+                this.realtimeVideo.srcObject = null;
+                this.realtimeStatus.className = 'status-indicator status-inactive';
+                this.toggleRealtimeCameraBtn.innerHTML = '<i class="fas fa-play"></i> Start Camera';
+                this.toggleRealtimeCameraBtn.className = 'btn btn-primary';
+                this.toggleDetectionBtn.disabled = true;
+                this.stopDetection();
+            }
+            
+            // Upload Mode Functions
+            handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.uploadPreview.src = e.target.result;
+                        this.uploadPreviewContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            // Capture Mode Functions
+            async toggleCamera() {
+                if (this.stream) {
+                    await this.stopCamera();
+                } else {
+                    await this.startCamera('capture');
+                }
+            }
+            
+            async startCamera(mode) {
+                try {
+                    const constraints = {
+                        video: {
+                            width: { ideal: 640 },
+                            height: { ideal: 480 },
+                            facingMode: 'environment'
+                        }
+                    };
+                    
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    
+                    if (mode === 'capture') {
+                        this.captureVideo.srcObject = this.stream;
+                        this.captureInfo.style.display = 'block';
+                        this.captureInfo.textContent = 'Camera Active';
+                        this.toggleCameraBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Camera';
+                        this.toggleCameraBtn.className = 'btn btn-danger';
+                        this.captureBtn.disabled = false;
+                    } else if (mode === 'realtime') {
+                        this.realtimeVideo.srcObject = this.stream;
+                        this.toggleRealtimeCameraBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Camera';
+                        this.toggleRealtimeCameraBtn.className = 'btn btn-danger';
+                        this.toggleDetectionBtn.disabled = false;
+                    }
+                    
+                } catch (error) {
+                    console.error('Error starting camera:', error);
+                    alert('Unable to access camera. Please check permissions and try again.');
+                }
+            }
+            
+            async stopCamera() {
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+                
+                this.captureVideo.srcObject = null;
+                this.captureInfo.style.display = 'none';
+                this.toggleCameraBtn.innerHTML = '<i class="fas fa-play"></i> Start Camera';
+                this.toggleCameraBtn.className = 'btn btn-primary';
+                this.captureBtn.disabled = true;
+            }
+            
+            captureImage() {
+                if (!this.stream) {
+                    alert('Please start the camera first');
+                    return;
+                }
+                
+                // Draw video frame to canvas
+                this.captureCtx.drawImage(this.captureVideo, 0, 0, this.captureCanvas.width, this.captureCanvas.height);
+                
+                // Convert canvas to blob and display preview
+                this.captureCanvas.toBlob((blob) => {
+                    const imageUrl = URL.createObjectURL(blob);
+                    this.capturePreview.src = imageUrl;
+                    this.capturePreviewContainer.style.display = 'block';
+                    
+                    // Store the blob for later analysis
+                    this.capturedImageBlob = blob;
+                }, 'image/jpeg', 0.8);
+            }
+            
+            analyzeCapturedImage() {
+                if (!this.capturedImageBlob) {
+                    alert('Please capture an image first');
+                    return;
+                }
+                
+                // Create a File object from the blob
+                const file = new File([this.capturedImageBlob], 'captured-image.jpg', { type: 'image/jpeg' });
+                
+                // Create a new FileList and DataTransfer to simulate file input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                
+                // Set the file input with our captured image
+                this.captureFileInput.files = dataTransfer.files;
+                
+                // Submit the form to the /predict endpoint
+                this.captureForm.submit();
+            }
+            
+            retakeCapture() {
+                this.capturePreviewContainer.style.display = 'none';
+                this.capturedImageBlob = null;
+                this.resultContainer.style.display = 'none';
+            }
+            
+            // Real-time Mode Functions
+            async toggleRealtimeCamera() {
+                if (this.stream) {
+                    await this.stopRealtimeCamera();
+                } else {
+                    await this.startCamera('realtime');
+                }
+            }
+            
+            async stopRealtimeCamera() {
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+                
+                this.realtimeVideo.srcObject = null;
+                this.realtimeStatus.className = 'status-indicator status-inactive';
+                this.toggleRealtimeCameraBtn.innerHTML = '<i class="fas fa-play"></i> Start Camera';
+                this.toggleRealtimeCameraBtn.className = 'btn btn-primary';
+                this.toggleDetectionBtn.disabled = true;
+                this.stopDetection();
+            }
+            
+            toggleDetection() {
+                if (this.isDetecting) {
+                    this.stopDetection();
+                } else {
+                    this.startDetection();
+                }
+            }
+            
+            startDetection() {
+                if (!this.stream) {
+                    alert('Please start the camera first');
+                    return;
+                }
+                
+                this.isDetecting = true;
+                this.toggleDetectionBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Detection';
+                this.toggleDetectionBtn.className = 'btn btn-danger';
+                this.realtimeStatus.className = 'status-indicator status-active';
+                
+                // Run detection every 2 seconds
+                this.detectionInterval = setInterval(() => {
+                    this.performRealTimeDetection();
+                }, 2000);
+            }
+            
+            stopDetection() {
+                this.isDetecting = false;
+                this.toggleDetectionBtn.innerHTML = '<i class="fas fa-play-circle"></i> Start Detection';
+                this.toggleDetectionBtn.className = 'btn btn-warning';
+                this.realtimeStatus.className = 'status-indicator status-inactive';
+                
+                if (this.detectionInterval) {
+                    clearInterval(this.detectionInterval);
+                    this.detectionInterval = null;
+                }
+                
+                this.realtimeInfo.innerHTML = 'Real-time Detection <span id="realtime-status" class="status-indicator status-inactive"></span>';
+            }
+            
+            async performRealTimeDetection() {
+                if (!this.isDetecting || !this.stream || this.isProcessing) return;
+                
+                this.isProcessing = true;
+                this.realtimeStatus.className = 'status-indicator status-processing';
+                
+                try {
+                    // Capture current frame
+                    this.realtimeCtx.drawImage(this.realtimeVideo, 0, 0, this.realtimeCanvas.width, this.realtimeCanvas.height);
+                    
+                    // Convert canvas to blob
+                    const blob = await new Promise(resolve => 
+                        this.realtimeCanvas.toBlob(resolve, 'image/jpeg', 0.8)
+                    );
+                    
+                    // Send to prediction API
+                    const formData = new FormData();
+                    formData.append('image', blob, 'frame.jpg');
+                    
+                    const response = await fetch('/api/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    // Update UI with results
+                    if (result.valid) {
+                        this.realtimeInfo.innerHTML = `
+                            Detected: ${result.disease}<br>
+                            Confidence: ${(result.confidence * 100).toFixed(1)}%
+                            <span id="realtime-status" class="status-indicator status-active"></span>
+                        `;
+                        
+                        // Update detection info color based on result
+                        if (result.disease.includes('Healthy')) {
+                            this.realtimeInfo.style.background = 'rgba(40, 167, 69, 0.8)';
+                        } else if (result.disease.includes('Invalid')) {
+                            this.realtimeInfo.style.background = 'rgba(108, 117, 125, 0.8)';
+                        } else {
+                            this.realtimeInfo.style.background = 'rgba(220, 53, 69, 0.8)';
+                            
+                            // Auto-capture if enabled
+                            if (this.autoCaptureCheckbox.checked) {
+                                this.captureImage();
+                                this.analyzeCapturedImage();
+                            }
+                        }
+                    } else {
+                        this.realtimeInfo.innerHTML = `
+                            ${result.error}<br>
+                            Please point camera at a corn leaf
+                            <span id="realtime-status" class="status-indicator status-inactive"></span>
+                        `;
+                        this.realtimeInfo.style.background = 'rgba(108, 117, 125, 0.8)';
+                    }
+                } catch (error) {
+                    console.error('Detection error:', error);
+                    this.realtimeInfo.innerHTML = `
+                        Error during detection
+                        <span id="realtime-status" class="status-indicator status-inactive"></span>
+                    `;
+                    this.realtimeInfo.style.background = 'rgba(255, 193, 7, 0.8)';
+                } finally {
+                    this.isProcessing = false;
+                    this.realtimeStatus.className = 'status-indicator status-active';
+                }
+            }
+        }
+
+        // Initialize the camera system when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            window.cameraSystem = new CameraDetectionSystem();
+            
+            // Check for camera support
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                document.getElementById('capture-section').innerHTML += `
+                    <div class="alert alert-warning mt-3">
+                        <h5>Camera Not Supported</h5>
+                        <p>Your browser or device doesn't support camera access. Please use the upload option instead.</p>
+                    </div>
+                `;
+                
+                document.getElementById('realtime-section').innerHTML += `
+                    <div class="alert alert-warning mt-3">
+                        <h5>Camera Not Supported</h5>
+                        <p>Your browser or device doesn't support camera access. Please use the upload option instead.</p>
+                    </div>
+                `;
+            }
+        });
+
+        // Handle page unload - cleanup camera
+        window.addEventListener('beforeunload', function() {
+            if (window.cameraSystem && window.cameraSystem.stream) {
+                window.cameraSystem.stopAllCameras();
+            }
+        });
+
+        ////////////////////////////////////////////////////////////////////////////////
+
+        const sortingData = {
+            "2025-04-14": { total: 8546, small: 2345, medium: 4512, large: 1689 },
+            "2025-04-13": { total: 7823, small: 2156, medium: 4102, large: 1565 },
+            "2025-04-12": { total: 8102, small: 2245, medium: 4187, large: 1670 },
+            "2025-04-11": { total: 7945, small: 2187, medium: 4023, large: 1735 },
+            "2025-04-10": { total: 8264, small: 2301, medium: 4278, large: 1685 },
+            "2025-04-09": { total: 7856, small: 2098, medium: 4189, large: 1569 },
+            "2025-04-08": { total: 8127, small: 2278, medium: 4267, large: 1582 },
+            "2025-04-07": { total: 8345, small: 2345, medium: 4321, large: 1679 },
+            "2025-04-06": { total: 7689, small: 2101, medium: 4078, large: 1510 },
+            "2025-04-05": { total: 7923, small: 2187, medium: 4156, large: 1580 },
+            "2025-04-04": { total: 8201, small: 2256, medium: 4289, large: 1656 },
+            "2025-04-03": { total: 8089, small: 2234, medium: 4178, large: 1677 }
+        };
+        
+        // Current date and selected date
+        const today = new Date(2025, 3, 14); // April 14, 2025
+        let currentMonth = today.getMonth();
+        let currentYear = today.getFullYear();
+        let selectedDate = today;
+        
+        // Function to update the display based on selected date
+        function updateDisplay(date) {
+            const dateString = formatDateForData(date);
+            const data = sortingData[dateString];
+            
+            if (!data) {
+                // If no data exists for this date, show zeros
+                document.querySelector('.total-value').textContent = '0';
+                document.querySelector('.small-corn .size-value').textContent = '0';
+                document.querySelector('.small-corn .size-percentage').textContent = '0.0%';
+                document.querySelector('.medium-corn .size-value').textContent = '0';
+                document.querySelector('.medium-corn .size-percentage').textContent = '0.0%';
+                document.querySelector('.large-corn .size-value').textContent = '0';
+                document.querySelector('.large-corn .size-percentage').textContent = '0.0%';
+            } else {
+                // Update with data
+                document.querySelector('.total-value').textContent = data.total.toLocaleString();
+                
+                const smallValue = document.querySelector('.small-corn .size-value');
+                const smallPercent = document.querySelector('.small-corn .size-percentage');
+                smallValue.textContent = data.small.toLocaleString();
+                smallPercent.textContent = (data.small / data.total * 100).toFixed(1) + '%';
+                
+                const mediumValue = document.querySelector('.medium-corn .size-value');
+                const mediumPercent = document.querySelector('.medium-corn .size-percentage');
+                mediumValue.textContent = data.medium.toLocaleString();
+                mediumPercent.textContent = (data.medium / data.total * 100).toFixed(1) + '%';
+                
+                const largeValue = document.querySelector('.large-corn .size-value');
+                const largePercent = document.querySelector('.large-corn .size-percentage');
+                largeValue.textContent = data.large.toLocaleString();
+                largePercent.textContent = (data.large / data.total * 100).toFixed(1) + '%';
+            }
+            
+            // Update current date display
+            document.querySelector('.current-date').textContent = formatDateForDisplay(date);
+            
+            // Update calendar selected date
+            const calendarDays = document.querySelectorAll('.calendar-day');
+            calendarDays.forEach(day => {
+                day.classList.remove('selected');
+                if (day.dataset.date === formatDateForData(date)) {
+                    day.classList.add('selected');
+                }
+            });
+            
+            selectedDate = date;
+        }
+        
+        // Format date for data access (YYYY-MM-DD)
+        function formatDateForData(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Format date for display (Month DD, YYYY)
+        function formatDateForDisplay(date) {
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+        
+        // Generate calendar
+        function generateCalendar(month, year) {
+            const calendarContainer = document.getElementById('calendar-days');
+            calendarContainer.innerHTML = '';
+            
+            // Update month display
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            document.querySelector('.month-display').textContent = `${monthNames[month]} ${year}`;
+            
+            // Get first day of month and total days
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Get days from previous month
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            
+            // Add days from previous month
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day other-month';
+                dayElement.textContent = daysInPrevMonth - i;
+                
+                const prevDate = new Date(year, month - 1, daysInPrevMonth - i);
+                dayElement.dataset.date = formatDateForData(prevDate);
+                
+                dayElement.addEventListener('click', () => {
+                    const clickDate = new Date(year, month - 1, daysInPrevMonth - i);
+                    updateDisplay(clickDate);
+                });
+                
+                if (sortingData[formatDateForData(prevDate)]) {
+                    dayElement.classList.add('has-data');
+                }
+                
+                calendarContainer.appendChild(dayElement);
+            }
+            
+            // Add days of current month
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = i;
+                
+                const currentDate = new Date(year, month, i);
+                dayElement.dataset.date = formatDateForData(currentDate);
+                
+                // Check if this is today
+                if (currentDate.getDate() === today.getDate() && 
+                    currentDate.getMonth() === today.getMonth() && 
+                    currentDate.getFullYear() === today.getFullYear()) {
+                    dayElement.classList.add('today');
+                }
+                
+                // Check if this is the selected date
+                if (currentDate.getDate() === selectedDate.getDate() && 
+                    currentDate.getMonth() === selectedDate.getMonth() && 
+                    currentDate.getFullYear() === selectedDate.getFullYear()) {
+                    dayElement.classList.add('selected');
+                }
+                
+                // Check if this date has data
+                if (sortingData[formatDateForData(currentDate)]) {
+                    dayElement.classList.add('has-data');
+                }
+                
+                dayElement.addEventListener('click', () => {
+                    const clickDate = new Date(year, month, i);
+                    updateDisplay(clickDate);
+                });
+                
+                calendarContainer.appendChild(dayElement);
+            }
+            
+            // Add days from next month to fill remaining slots
+            const totalCells = 42; // 6 rows of 7 days
+            const remainingCells = totalCells - (firstDay + daysInMonth);
+            
+            for (let i = 1; i <= remainingCells; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day other-month';
+                dayElement.textContent = i;
+                
+                const nextDate = new Date(year, month + 1, i);
+                dayElement.dataset.date = formatDateForData(nextDate);
+                
+                dayElement.addEventListener('click', () => {
+                    const clickDate = new Date(year, month + 1, i);
+                    updateDisplay(clickDate);
+                });
+                
+                if (sortingData[formatDateForData(nextDate)]) {
+                    dayElement.classList.add('has-data');
+                }
+                
+                calendarContainer.appendChild(dayElement);
+            }
+        }
+        
+        // Initialize calendar and data display
+        document.addEventListener('DOMContentLoaded', () => {
+            // Generate initial calendar for current month
+            generateCalendar(currentMonth, currentYear);
+            
+            // Set up navigation
+            document.getElementById('prev-month').addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                generateCalendar(currentMonth, currentYear);
+            });
+            
+            document.getElementById('next-month').addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                generateCalendar(currentMonth, currentYear);
+            });
+            
+            // Initialize data display with today's date
+            updateDisplay(today);
+        });
+
+
+        //////////////////////SOILLLL
+
+
+
+        // Soil Moisture Data Updater
+    // function updateSoilData() {
+    //     fetch('/get-soil-data')
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             // Update gauge
+    //             const percent = data.percent;
+    //             document.getElementById('gauge-fill').style.width = percent + '%';
+                
+    //             // Update percentage display
+    //             document.getElementById('moisture-percent').textContent = percent + '%';
+                
+    //             // Update status badge
+    //             const statusElement = document.getElementById('moisture-status');
+    //             statusElement.textContent = data.status;
+                
+    //             // Clear all status classes first
+    //             statusElement.classList.remove('status-dry', 'status-optimal', 'status-wet');
+                
+    //             // Add appropriate status class
+    //             if (data.status === 'DRY') {
+    //                 statusElement.classList.add('status-dry');
+    //             } else if (data.status === 'OPTIMAL') {
+    //                 statusElement.classList.add('status-optimal');
+    //             } else {
+    //                 statusElement.classList.add('status-wet');
+    //             }
+                
+    //             // Update other fields
+    //             document.getElementById('raw-value').textContent = data.raw;
+    //             document.getElementById('last-updated').textContent = data.last_update;
+    //             document.getElementById('moisture-description').innerHTML = 
+    //                 `<i class="fas fa-info-circle me-2"></i> ${data.description}`;
+                
+    //             // Change alert color based on status
+    //             const alertBox = document.getElementById('moisture-description');
+    //             alertBox.className = 'alert text-center mt-3 ';
+    //             if (data.status === 'DRY') {
+    //                 alertBox.classList.add('alert-danger');
+    //             } else if (data.status === 'OPTIMAL') {
+    //                 alertBox.classList.add('alert-success');
+    //             } else {
+    //                 alertBox.classList.add('alert-primary');
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error('Error fetching soil data:', error);
+    //             document.getElementById('moisture-description').innerHTML = 
+    //                 '<i class="fas fa-exclamation-triangle me-2"></i> Error connecting to sensor';
+    //         });
+    // }
+
+    // // Update immediately when page loads
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     updateSoilData();
+    //     // Update every 5 seconds
+    //     setInterval(updateSoilData, 5000);
+    // });
+    
+    // Smooth scroll for anchor links (if not already in your main.js)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function () {
+            const iframe = modal.querySelector('iframe');
+            if (iframe) {
+                const src = iframe.src;
+                iframe.src = src; // reset video
+            }
+        });
+    });
+});
+    </script>
+</body>
+
+</html>
