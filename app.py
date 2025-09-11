@@ -11,7 +11,7 @@ import numpy as np
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import load_model
 from dotenv import load_dotenv
-
+import urllib.request
 
 # ---------------- LOAD ENV ----------------
 load_dotenv()
@@ -155,6 +155,26 @@ except Exception as e:
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def download_model_from_gdrive():
+    model_path = "maiscan_disease_model_final.keras"
+    
+    if os.path.exists(model_path):
+        return model_path
+    
+    print("Downloading model from Google Drive...")
+    try:
+        # Replace with your Google Drive direct download URL
+        # Get this from: drive.google.com -> right click your file -> Get link -> Anyone with link can view
+        # Then modify the URL format
+        gdrive_url = "https://drive.google.com/file/d/1y-1K19u6EH69bKy1Id52ks49_R7Ibwtm/view?usp=sharing"
+        
+        urllib.request.urlretrieve(gdrive_url, model_path)
+        print("Model downloaded from Google Drive")
+        return model_path
+    except Exception as e:
+        print(f"Google Drive download failed: {e}")
+        return None
 
 # ---------------- ROUTES ----------------
 @app.route("/")
