@@ -1,0 +1,41 @@
+# Environment variables
+.env
+*.env
+
+# Firebase credentials
+*.json
+project-maiscan-firebase-adminsdk-*.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Flask
+instance/
+.webassets-cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+static/user_image/*
+!static/user_image/.gitkeep
+
+# Model files (if too large)
+# *.keras
+# *.h5

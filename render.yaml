@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: maiscan-app
+    env: python
+    plan: starter  # or starter plus if you need more resources
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.18

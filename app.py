@@ -466,4 +466,6 @@ def pred_corn_disease(img_path):
 #     return render_template("500.html"), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8080, threaded=True)
+    # Get port from environment variable (Render sets this)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(debug=False, host="0.0.0.0", port=port, threaded=True)
