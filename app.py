@@ -11,8 +11,7 @@ import numpy as np
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import load_model
 from dotenv import load_dotenv
-import requests
-from mega import Mega
+
 
 # ---------------- LOAD ENV ----------------
 load_dotenv()
@@ -177,7 +176,6 @@ try:
 except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
-    
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
