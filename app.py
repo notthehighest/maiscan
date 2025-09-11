@@ -190,12 +190,12 @@ except Exception as e:
     model = None
 
 # ---------------- LOAD ML MODEL ----------------
-try:
-    model = load_model("maiscan_disease_model_final.keras")
-    print("✓ Model Loaded Successfully")
-except Exception as e:
-    print(f"✗ Error loading model: {e}")
-    model = None
+# try:
+#     model = load_model("maiscan_disease_model_final.keras")
+#     print("✓ Model Loaded Successfully")
+# except Exception as e:
+#     print(f"✗ Error loading model: {e}")
+#     model = None
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
