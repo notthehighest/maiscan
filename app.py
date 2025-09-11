@@ -11,7 +11,7 @@ import numpy as np
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import load_model
 from dotenv import load_dotenv
-import urllib.request
+
 
 # ---------------- LOAD ENV ----------------
 load_dotenv()
@@ -26,6 +26,12 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB
+
+# Check and fix permissions for upload folder
+upload_folder = app.config["UPLOAD_FOLDER"]
+if not os.path.exists(upload_folder):
+    os.makedirs(upload_folder)
+os.chmod(upload_folder, 0o755)  # Ensure proper permissions
 
 # ---------------- FIREBASE SETUP ----------------
 def initialize_firebase():
@@ -148,38 +154,49 @@ def load_user(user_id):
 try:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.keras")
-    model = load_model(model_path)
+    
+    # Check if model file exists
+    if not os.path.exists(model_path):
+        print(f"❌ Model file not found at: {model_path}")
+        # Try alternative paths
+        model_path = os.path.join(BASE_DIR, "static", "maiscan_disease_model_final.keras")
+        if not os.path.exists(model_path):
+            print(f"❌ Model file not found at: {model_path}")
+            model_path = os.path.join(BASE_DIR, "models", "maiscan_disease_model_final.keras")
+    
+    print(f"🔄 Loading model from: {model_path}")
+    
+    if os.path.exists(model_path):
+        model = load_model(model_path)
+        print("✅ Model loaded successfully")
+    else:
+        print("❌ Model file not found in any location")
+        model = None
+        
 except Exception as e:
-    print(f"✗ Error loading model: {e}")
+    print(f"❌ Error loading model: {e}")
     model = None
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def download_model_from_gdrive():
-    model_path = "maiscan_disease_model_final.keras"
-    
-    if os.path.exists(model_path):
-        return model_path
-    
-    print("Downloading model from Google Drive...")
-    try:
-        # Replace with your Google Drive direct download URL
-        # Get this from: drive.google.com -> right click your file -> Get link -> Anyone with link can view
-        # Then modify the URL format
-        gdrive_url = "https://drive.google.com/file/d/1y-1K19u6EH69bKy1Id52ks49_R7Ibwtm/view?usp=sharing"
-        
-        urllib.request.urlretrieve(gdrive_url, model_path)
-        print("Model downloaded from Google Drive")
-        return model_path
-    except Exception as e:
-        print(f"Google Drive download failed: {e}")
-        return None
-
 # ---------------- ROUTES ----------------
 @app.route("/")
 def home():
     return render_template("base.html")
+
+@app.route("/debug")
+def debug():
+    model_status = "Loaded" if model is not None else "Not Loaded"
+    model_path_debug = os.path.join(os.path.dirname(os.path.abspath(__file__)), "maiscan_disease_model_final.keras")
+    model_exists = os.path.exists(model_path_debug)
+    
+    return jsonify({
+        "model_status": model_status,
+        "model_path": model_path_debug,
+        "model_exists": model_exists,
+        "files_in_dir": os.listdir(os.path.dirname(os.path.abspath(__file__)))
+    })
 
 # -------- REGISTER --------
 @app.route("/register", methods=["GET", "POST"])
@@ -383,7 +400,7 @@ def predict():
         pred, output_page, confidence = pred_corn_disease(file_path)
 
         # ✅ Save metadata to Firestore (not the image itself)
-        if pred != "Unknown Class":
+        if pred != "Unknown Class" and pred != "Model Error":
             db.collection("UploadedImages").add({
                 "filename": filename,
                 "user_id": current_user.id,
@@ -426,7 +443,7 @@ def api_predict():
         os.remove(file_path)
         
         # Check if it's an invalid image
-        is_valid = not pred.startswith("Invalid Image")
+        is_valid = not pred.startswith("Invalid Image") and not pred.startswith("Model Error")
         
         return jsonify({
             "valid": is_valid,
@@ -443,6 +460,10 @@ def api_predict():
 
 # -------- PREDICTION FUNCTION --------
 def pred_corn_disease(img_path):
+    if model is None:
+        print("❌ Model is not loaded, cannot make prediction")
+        return "Model Error", "invalid_image.html", 0.0
+    
     try:
         img = load_img(img_path, target_size=(224, 224))
         img_array = img_to_array(img) / 255.0
@@ -472,20 +493,12 @@ def pred_corn_disease(img_path):
             12: ("Leafhopper", "leafhopper.html"),
         }
 
-        return diseases.get(pred_class, ("Unknown Class", "invalid_image.html")) + (confidence,)
+        disease_name, template_name = diseases.get(pred_class, ("Unknown Class", "invalid_image.html"))
+        return disease_name, template_name, confidence
 
     except Exception as e:
         print("Error in prediction:", e)
         return "Error", "invalid_image.html", 0.0
-
-# -------- ERROR HANDLERS --------
-# @app.errorhandler(404)
-# def not_found_error(e):
-#     return render_template("404.html"), 404
-
-# @app.errorhandler(500)
-# def internal_error(e):
-#     return render_template("500.html"), 500
 
 if __name__ == "__main__":
     # Get port from environment variable (Render sets this)
