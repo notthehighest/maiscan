@@ -146,8 +146,9 @@ def load_user(user_id):
 
 # ---------------- LOAD ML MODEL ----------------
 try:
-    model = load_model("maiscan_disease_model_final.keras")
-    print("✓ Model Loaded Successfully")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.keras")
+    model = load_model(model_path)
 except Exception as e:
     print(f"✗ Error loading model: {e}")
     model = None
