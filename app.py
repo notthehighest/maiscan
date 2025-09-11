@@ -11,6 +11,8 @@ import numpy as np
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import load_model
 from dotenv import load_dotenv
+from mega import Mega
+import urllib.request
 
 # ---------------- LOAD ENV ----------------
 load_dotenv()
@@ -142,6 +144,50 @@ def load_user(user_id):
         print("Error loading user:", e)
         return None
 
+
+def download_model_from_mega():
+    model_path = "maiscan_disease_model_final.keras"
+    
+    # Check if model already exists
+    if os.path.exists(model_path):
+        print(f"Model already exists: {model_path}")
+        return model_path
+    
+    print("Downloading model from Mega...")
+    try:
+        # Initialize Mega client
+        mega = Mega()
+        m = mega.login()  # Anonymous login
+        
+        # Your Mega URL components
+        mega_url = "https://mega.nz/file/eoQTgJaR#maLXsn2jC5kTGnwGpdEi9DGUcbSslRXhs5NgC2iqxU4"
+        
+        # Download the file
+        m.download_url(mega_url, dest_filename=model_path)
+        
+        print("Model downloaded successfully from Mega")
+        return model_path
+        
+    except Exception as e:
+        print(f"Error downloading model from Mega: {e}")
+        return None
+
+# ---------------- LOAD ML MODEL ----------------
+try:
+    # Download model if it doesn't exist
+    model_path = download_model_from_mega()
+    
+    if model_path and os.path.exists(model_path):
+        print(f"Loading model from: {model_path}")
+        model = load_model(model_path)
+        print("✓ Model Loaded Successfully")
+    else:
+        print("✗ Model file not available")
+        model = None
+        
+except Exception as e:
+    print(f"✗ Error loading model: {e}")
+    model = None
 
 # ---------------- LOAD ML MODEL ----------------
 try:
@@ -340,6 +386,10 @@ def maiscan():
 @app.route("/predict", methods=["POST"])
 @login_required
 def predict():
+    if model is None:
+        flash("ML model is currently unavailable. Please try again later.", "danger")
+        return redirect(url_for("maiscan"))
+    
     if "image" not in request.files:
         flash("No image uploaded.", "danger")
         return redirect(url_for("maiscan"))
@@ -382,8 +432,13 @@ def predict():
 @login_required
 def api_predict():
     if model is None:
-        return jsonify({"valid": False, "error": "ML model not available", "disease": "", "confidence": 0})
-            
+        return jsonify({
+            "valid": False, 
+            "error": "ML model is currently unavailable", 
+            "disease": "", 
+            "confidence": 0
+        })
+           
     if 'image' not in request.files:
         return jsonify({"valid": False, "error": "No image provided", "disease": "", "confidence": 0})
             
