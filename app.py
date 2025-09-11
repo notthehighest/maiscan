@@ -170,7 +170,7 @@ def download_model_from_mega():
         m = mega.login()  # Anonymous login
         
         # Your Mega URL
-        mega_url = "https://mega.nz/file/eoQTgJaR#maLXsn2jC5kTGnwGpdEi9DGUcbSslRXhs5NgC2iqxU4"
+        mega_url = "https://mega.nz/file/XgQDRDqK#maLXsn2jC5kTGnwGpdEi9DGUcbSslRXhs5NgC2iqxU4"
         
         print(f"Downloading from: {mega_url}")
         
