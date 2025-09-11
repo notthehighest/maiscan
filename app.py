@@ -11,7 +11,7 @@ import numpy as np
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import load_model
 from dotenv import load_dotenv
-
+import urllib.request
 
 # ---------------- LOAD ENV ----------------
 load_dotenv()
@@ -27,12 +27,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB
 
-# Check and fix permissions for upload folder
-upload_folder = app.config["UPLOAD_FOLDER"]
-if not os.path.exists(upload_folder):
-    os.makedirs(upload_folder)
-os.chmod(upload_folder, 0o755)  # Ensure proper permissions
-
 # ---------------- FIREBASE SETUP ----------------
 def initialize_firebase():
     """Initialize Firebase with flexible credential loading"""
@@ -46,7 +40,7 @@ def initialize_firebase():
             os.getenv("FIREBASE_CLIENT_EMAIL"),
             os.getenv("FIREBASE_CLIENT_ID")
         ]):
-            print("🔄 Loading Firebase credentials from environment variables...")
+            print("Loading Firebase credentials from environment variables...")
             firebase_credentials = {
                 "type": os.getenv("FIREBASE_TYPE"),
                 "project_id": os.getenv("FIREBASE_PROJECT_ID"),
@@ -61,25 +55,25 @@ def initialize_firebase():
                 "universe_domain": "googleapis.com"
             }
             cred = credentials.Certificate(firebase_credentials)
-            print("✅ Firebase credentials loaded from environment variables")
+            print("Firebase credentials loaded from environment variables")
             
         # Method 2: Fall back to JSON file (for Local Development)
         else:
-            print("🔄 Loading Firebase credentials from JSON file...")
+            print("Loading Firebase credentials from JSON file...")
             firebase_credentials_path = os.getenv("FIREBASE_CREDENTIALS", "project-maiscan-firebase-adminsdk-fbsvc-8491da1d45.json")
             
             if not firebase_credentials_path or not os.path.exists(firebase_credentials_path):
                 raise FileNotFoundError(f"Firebase credentials file not found: {firebase_credentials_path}")
             
             cred = credentials.Certificate(firebase_credentials_path)
-            print(f"✅ Firebase credentials loaded from JSON file: {firebase_credentials_path}")
+            print(f"Firebase credentials loaded from JSON file: {firebase_credentials_path}")
         
         # Initialize Firebase Admin SDK
         firebase_admin.initialize_app(cred)
         return firestore.client()
         
     except Exception as e:
-        print(f"❌ Firebase initialization error: {e}")
+        print(f"Firebase initialization error: {e}")
         raise e
 
 # Initialize Firebase
@@ -105,16 +99,16 @@ def initialize_pyrebase():
         missing_fields = [field for field in required_fields if not firebaseConfig.get(field)]
         
         if missing_fields:
-            print(f"⚠️ Missing Pyrebase config fields: {missing_fields}")
+            print(f"Missing Pyrebase config fields: {missing_fields}")
             return None
         
         pb = pyrebase.initialize_app(firebaseConfig)
         pb_auth = pb.auth()
-        print("✅ Pyrebase initialized successfully")
+        print("Pyrebase initialized successfully")
         return pb, pb_auth
         
     except Exception as e:
-        print(f"⚠️ Pyrebase initialization warning: {e}")
+        print(f"Pyrebase initialization warning: {e}")
         return None, None
 
 # Initialize Pyrebase
@@ -149,33 +143,175 @@ def load_user(user_id):
         print("Error loading user:", e)
         return None
 
-
-# ---------------- LOAD ML MODEL ----------------
-try:
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.keras")
+# ---------------- MODEL DOWNLOAD AND LOADING ----------------
+def download_model_from_mega():
+    """Download model from Mega cloud storage with robust error handling"""
+    model_path = "maiscan_disease_model_final.keras"
     
-    # Check if model file exists
-    if not os.path.exists(model_path):
-        print(f"❌ Model file not found at: {model_path}")
-        # Try alternative paths
-        model_path = os.path.join(BASE_DIR, "static", "maiscan_disease_model_final.keras")
-        if not os.path.exists(model_path):
-            print(f"❌ Model file not found at: {model_path}")
-            model_path = os.path.join(BASE_DIR, "models", "maiscan_disease_model_final.keras")
-    
-    print(f"🔄 Loading model from: {model_path}")
-    
+    # Check if model already exists
     if os.path.exists(model_path):
-        model = load_model(model_path)
-        print("✅ Model loaded successfully")
-    else:
-        print("❌ Model file not found in any location")
-        model = None
+        file_size = os.path.getsize(model_path)
+        print(f"Model already exists: {model_path} ({file_size} bytes)")
         
-except Exception as e:
-    print(f"❌ Error loading model: {e}")
-    model = None
+        # Verify file is not corrupted (basic size check)
+        if file_size > 1000000:  # At least 1MB
+            return model_path
+        else:
+            print("Model file seems corrupted (too small), re-downloading...")
+            os.remove(model_path)
+    
+    print("Downloading model from Mega...")
+    try:
+        # Try importing mega - this might fail on some systems
+        from mega import Mega
+        
+        # Initialize Mega client
+        mega = Mega()
+        m = mega.login()  # Anonymous login
+        
+        # Your Mega URL
+        mega_url = "https://mega.nz/file/eoQTgJaR#maLXsn2jC5kTGnwGpdEi9DGUcbSslRXhs5NgC2iqxU4"
+        
+        print(f"Downloading from: {mega_url}")
+        
+        # Download the file
+        downloaded_file = m.download_url(mega_url, dest_filename=model_path)
+        
+        if os.path.exists(model_path):
+            file_size = os.path.getsize(model_path)
+            print(f"Model downloaded successfully from Mega ({file_size} bytes)")
+            
+            # Verify download
+            if file_size < 1000000:  # Less than 1MB suggests download failure
+                print("Downloaded file too small, likely corrupted")
+                if os.path.exists(model_path):
+                    os.remove(model_path)
+                return None
+            
+            return model_path
+        else:
+            print("Model download completed but file not found")
+            return None
+        
+    except ImportError:
+        print("ERROR: Mega library not available")
+        print("Please ensure 'mega.py' is in your requirements.txt")
+        return None
+    except Exception as e:
+        print(f"Error downloading model from Mega: {e}")
+        return None
+
+def load_ml_model():
+    """Load the ML model with compatibility fixes"""
+    print("=" * 60)
+    print("INITIALIZING ML MODEL")
+    print("=" * 60)
+    
+    # Debug: Check current directory and files
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Files in current directory: {[f for f in os.listdir('.') if not f.startswith('.')]}")
+    
+    # Try to download model from Mega
+    model_path = download_model_from_mega()
+    
+    if not model_path or not os.path.exists(model_path):
+        print("MODEL NOT AVAILABLE - ML functionality will be disabled")
+        print("Check Mega download and network connectivity")
+        print("=" * 60)
+        return None
+    
+    try:
+        print(f"Loading model from: {model_path}")
+        print("Model file size:", os.path.getsize(model_path), "bytes")
+        
+        # Import TensorFlow and check version
+        import tensorflow as tf
+        print(f"TensorFlow version: {tf.__version__}")
+        
+        # Try loading with different methods for compatibility
+        try:
+            # Method 1: Direct load (works with newer TensorFlow/Keras)
+            model = load_model(model_path)
+            print("MODEL LOADED SUCCESSFULLY (Method 1: Direct)")
+            
+        except Exception as e1:
+            print(f"Method 1 failed: {e1}")
+            
+            try:
+                # Method 2: Load with custom objects (for compatibility)
+                print("Trying compatibility mode...")
+                model = load_model(model_path, compile=False)
+                
+                # Recompile the model with current Keras version
+                model.compile(
+                    optimizer='adam',
+                    loss='categorical_crossentropy',
+                    metrics=['accuracy']
+                )
+                print("MODEL LOADED SUCCESSFULLY (Method 2: Compatibility)")
+                
+            except Exception as e2:
+                print(f"Method 2 failed: {e2}")
+                
+                try:
+                    # Method 3: Load with safe mode
+                    print("Trying safe mode...")
+                    model = tf.keras.models.load_model(model_path, safe_mode=False)
+                    print("MODEL LOADED SUCCESSFULLY (Method 3: Safe mode)")
+                    
+                except Exception as e3:
+                    print(f"Method 3 failed: {e3}")
+                    print("All loading methods failed - model incompatible")
+                    print("=" * 60)
+                    return None
+        
+        # Verify model structure
+        try:
+            print("Model input shape:", model.input_shape)
+            print("Model output shape:", model.output_shape)
+            print("Number of layers:", len(model.layers))
+        except:
+            print("Could not display model structure")
+        
+        print("MODEL INITIALIZATION COMPLETE")
+        print("=" * 60)
+        return model
+        
+    except Exception as e:
+        print(f"ERROR LOADING MODEL: {e}")
+        print("ML functionality will be disabled")
+        print("=" * 60)
+        return None
+
+# Initialize ML Model
+model = load_ml_model()
+
+# Add this check function for runtime model verification
+def verify_model_working():
+    """Verify the model can make predictions"""
+    if model is None:
+        return False
+    
+    try:
+        # Create a dummy test image
+        test_image = np.random.random((1, 224, 224, 3))
+        
+        # Try prediction
+        prediction = model.predict(test_image, verbose=0)
+        
+        if prediction is not None and len(prediction) > 0:
+            print("Model verification: PASSED")
+            return True
+        else:
+            print("Model verification: FAILED - No prediction output")
+            return False
+            
+    except Exception as e:
+        print(f"Model verification: FAILED - {e}")
+        return False
+
+# Verify model works
+model_working = verify_model_working()
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -184,19 +320,6 @@ def allowed_file(filename):
 @app.route("/")
 def home():
     return render_template("base.html")
-
-@app.route("/debug")
-def debug():
-    model_status = "Loaded" if model is not None else "Not Loaded"
-    model_path_debug = os.path.join(os.path.dirname(os.path.abspath(__file__)), "maiscan_disease_model_final.keras")
-    model_exists = os.path.exists(model_path_debug)
-    
-    return jsonify({
-        "model_status": model_status,
-        "model_path": model_path_debug,
-        "model_exists": model_exists,
-        "files_in_dir": os.listdir(os.path.dirname(os.path.abspath(__file__)))
-    })
 
 # -------- REGISTER --------
 @app.route("/register", methods=["GET", "POST"])
@@ -210,10 +333,10 @@ def register():
             return render_template("register.html")
 
         try:
-            # ✅ Create user in Firebase Authentication
+            # Create user in Firebase Authentication
             user_record = auth.create_user(email=email, password=password)
 
-            # ✅ Save extra data in Firestore
+            # Save extra data in Firestore
             db.collection("Users").document(user_record.uid).set({
                 "email": email,
                 "created_at": datetime.datetime.utcnow()
@@ -240,10 +363,15 @@ def login():
             return render_template("login.html")
 
         try:
-            # ✅ Authenticate with Firebase using Pyrebase
+            # Check if pyrebase is available
+            if pb_auth is None:
+                flash("Authentication service not available.", "danger")
+                return render_template("login.html")
+            
+            # Authenticate with Firebase using Pyrebase
             user = pb_auth.sign_in_with_email_and_password(email, password)
 
-            # ✅ Get Firebase user record
+            # Get Firebase user record
             user_record = auth.get_user(user["localId"])
 
             # Flask-Login user
@@ -270,6 +398,10 @@ def forgot_password():
             return render_template("forgot_password.html")
         
         try:
+            if pb_auth is None:
+                flash("Password reset service not available.", "danger")
+                return render_template("forgot_password.html")
+                
             # Send password reset email
             pb_auth.send_password_reset_email(email)
             flash("Password reset email sent! Check your inbox.", "success")
@@ -290,8 +422,6 @@ def forgot_password():
 # -------- RESET PASSWORD --------
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
-    # This is typically handled by Firebase directly via email link
-    # We'll just show a confirmation page
     return render_template("reset_password.html")
 
 # -------- LOGOUT --------
@@ -336,13 +466,12 @@ def update_account():
 
     return redirect(url_for("maiscan"))
 
-
 # -------- MAISCAN DASHBOARD --------
 @app.route("/maiscan")
 @login_required
 def maiscan():
     try:
-        # ✅ Fetch user’s uploads from Firestore
+        # Fetch user's uploads from Firestore
         uploads_ref = db.collection("UploadedImages").where("user_id", "==", current_user.id)
         uploads = [doc.to_dict() for doc in uploads_ref.stream()]
 
@@ -375,17 +504,84 @@ def maiscan():
         disease_types=disease_types
     )
 
+# -------- PREDICTION FUNCTION --------
+def pred_corn_disease(img_path):
+    """Predict corn disease from image path with robust error handling"""
+    try:
+        if model is None:
+            return "Model Not Available", "invalid_image.html", 0.0
+        
+        if not model_working:
+            return "Model Error", "invalid_image.html", 0.0
+            
+        # Load and preprocess image
+        img = load_img(img_path, target_size=(224, 224))
+        img_array = img_to_array(img) / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
+
+        # Make prediction
+        prediction = model.predict(img_array, verbose=0)
+        
+        if prediction is None or len(prediction) == 0:
+            return "Prediction Failed", "invalid_image.html", 0.0
+        
+        pred_class = np.argmax(prediction)
+        confidence = float(np.max(prediction))
+
+        # Confidence threshold
+        CONFIDENCE_THRESHOLD = 0.5
+        if confidence < CONFIDENCE_THRESHOLD:
+            return "Low Confidence", "invalid_image.html", confidence
+
+        # Disease mapping
+        diseases = {
+            0: ("Aphids", "aphids.html"),
+            1: ("Armyworm", "armyworm.html"),
+            2: ("Common Cutworm", "common_cutworm.html"),
+            3: ("Common Rust", "common_rust.html"),
+            4: ("Common Smut", "common_smut.html"),
+            5: ("Corn Borer", "corn_borer.html"),
+            6: ("Earwig", "earwig.html"),
+            7: ("Fusarium Ear Rot", "fusarium_ear_rot.html"),
+            8: ("Gray Leaf Spot", "gray_leaf_spot.html"),
+            9: ("Healthy Corn", "healthycorn.html"),
+            10: ("Healthy Leaf", "healthyleaf.html"),
+            11: ("Leaf Blight", "leaf_blight.html"),
+            12: ("Leafhopper", "leafhopper.html"),
+        }
+
+        disease_info = diseases.get(pred_class, ("Unknown Class", "invalid_image.html"))
+        return disease_info + (confidence,)
+
+    except Exception as e:
+        print(f"Error in prediction: {e}")
+        return "Prediction Error", "invalid_image.html", 0.0
+
 # -------- PREDICTION --------
 @app.route("/predict", methods=["POST"])
 @login_required
 def predict():
+    print("=" * 50)
+    print("PREDICTION REQUEST RECEIVED")
+    print(f"Model status: {'Available' if model is not None else 'NOT AVAILABLE'}")
+    print(f"Model working: {'Yes' if model_working else 'No'}")
+    
+    if model is None or not model_working:
+        print("Model is None or not working - redirecting with error")
+        flash("ML model is currently unavailable. Please contact support.", "danger")
+        return redirect(url_for("maiscan"))
+    
     if "image" not in request.files:
+        print("No image in request files")
         flash("No image uploaded.", "danger")
         return redirect(url_for("maiscan"))
 
     file = request.files["image"]
+    print(f"File received: {file.filename}")
+    
     if file.filename == "" or not allowed_file(file.filename):
-        flash("Invalid file type.", "danger")
+        print("Invalid file")
+        flash("Invalid file type. Please upload PNG, JPG, or JPEG files.", "danger")
         return redirect(url_for("maiscan"))
 
     try:
@@ -395,34 +591,53 @@ def predict():
         filename = timestamp + filename
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(file_path)
+        print(f"File saved to: {file_path}")
 
         # Predict
+        print("Starting prediction...")
         pred, output_page, confidence = pred_corn_disease(file_path)
+        print(f"Prediction result: {pred}, Template: {output_page}, Confidence: {confidence}")
 
-        # ✅ Save metadata to Firestore (not the image itself)
-        if pred != "Unknown Class" and pred != "Model Error":
-            db.collection("UploadedImages").add({
-                "filename": filename,
-                "user_id": current_user.id,
-                "disease_type": pred,
-                "confidence": confidence,
-                "upload_date": datetime.datetime.utcnow()
-            })
+        # Save metadata to Firestore (only for valid predictions)
+        if pred not in ["Unknown Class", "Model Not Available", "Error in Prediction", "Prediction Failed", "Model Error", "Low Confidence"]:
+            try:
+                db.collection("UploadedImages").add({
+                    "filename": filename,
+                    "user_id": current_user.id,
+                    "disease_type": pred,
+                    "confidence": confidence,
+                    "upload_date": datetime.datetime.utcnow()
+                })
+                print("Prediction saved to Firestore")
+            except Exception as db_error:
+                print(f"Error saving to Firestore: {db_error}")
 
+        print(f"Rendering template: {output_page}")
         return render_template(output_page, pred_output=pred, user_image=file_path, confidence=confidence)
 
     except Exception as e:
-        print("Prediction error:", e)
-        flash("Error processing image.", "danger")
+        print(f"Prediction error: {e}")
+        import traceback
+        traceback.print_exc()
+        flash("Error processing image. Please try again.", "danger")
         return redirect(url_for("maiscan"))
 
 # -------- PREDICTION REALTIME --------
 @app.route("/api/predict", methods=['POST'])
 @login_required
 def api_predict():
-    if model is None:
-        return jsonify({"valid": False, "error": "ML model not available", "disease": "", "confidence": 0})
-            
+    print("API prediction request received")
+    print(f"Model status: {'Available' if model is not None else 'NOT AVAILABLE'}")
+    print(f"Model working: {'Yes' if model_working else 'No'}")
+    
+    if model is None or not model_working:
+        return jsonify({
+            "valid": False, 
+            "error": "ML model is currently unavailable", 
+            "disease": "", 
+            "confidence": 0
+        })
+           
     if 'image' not in request.files:
         return jsonify({"valid": False, "error": "No image provided", "disease": "", "confidence": 0})
             
@@ -440,10 +655,11 @@ def api_predict():
         pred, _, confidence = pred_corn_disease(file_path)
         
         # Clean up temporary file
-        os.remove(file_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
         
-        # Check if it's an invalid image
-        is_valid = not pred.startswith("Invalid Image") and not pred.startswith("Model Error")
+        # Check if it's a valid prediction
+        is_valid = pred not in ["Model Not Available", "Error in Prediction", "Unknown Class", "Prediction Failed", "Model Error", "Low Confidence"]
         
         return jsonify({
             "valid": is_valid,
@@ -457,48 +673,6 @@ def api_predict():
             os.remove(file_path)
         print(f"Error in API prediction: {e}")
         return jsonify({"valid": False, "error": "Prediction failed", "disease": "", "confidence": 0}), 500
-
-# -------- PREDICTION FUNCTION --------
-def pred_corn_disease(img_path):
-    if model is None:
-        print("❌ Model is not loaded, cannot make prediction")
-        return "Model Error", "invalid_image.html", 0.0
-    
-    try:
-        img = load_img(img_path, target_size=(224, 224))
-        img_array = img_to_array(img) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
-
-        prediction = model.predict(img_array)
-        pred_class = np.argmax(prediction)
-        confidence = float(np.max(prediction))
-
-        CONFIDENCE_THRESHOLD = 0.5
-        if confidence < CONFIDENCE_THRESHOLD:
-            return "Unknown Class", "invalid_image.html", confidence
-
-        diseases = {
-            0: ("Aphids", "aphids.html"),
-            1: ("Armyworm", "armyworm.html"),
-            2: ("Common Cutworm", "common_cutworm.html"),
-            3: ("Common Rust", "common_rust.html"),
-            4: ("Common Smut", "common_smut.html"),
-            5: ("Corn Borer", "corn_borer.html"),
-            6: ("Earwig", "earwig.html"),
-            7: ("Fusarium Ear Rot", "fusarium_ear_rot.html"),
-            8: ("Gray Leaf Spot", "gray_leaf_spot.html"),
-            9: ("Healthy Corn", "healthycorn.html"),
-            10: ("Healthy Leaf", "healthyleaf.html"),
-            11: ("Leaf Blight", "leaf_blight.html"),
-            12: ("Leafhopper", "leafhopper.html"),
-        }
-
-        disease_name, template_name = diseases.get(pred_class, ("Unknown Class", "invalid_image.html"))
-        return disease_name, template_name, confidence
-
-    except Exception as e:
-        print("Error in prediction:", e)
-        return "Error", "invalid_image.html", 0.0
 
 if __name__ == "__main__":
     # Get port from environment variable (Render sets this)
