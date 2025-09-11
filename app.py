@@ -11,8 +11,6 @@ import numpy as np
 from keras.preprocessing.image import load_img, img_to_array
 from keras.models import load_model
 from dotenv import load_dotenv
-from mega import Mega
-import urllib.request
 
 # ---------------- LOAD ENV ----------------
 load_dotenv()
@@ -41,7 +39,7 @@ def initialize_firebase():
             os.getenv("FIREBASE_CLIENT_EMAIL"),
             os.getenv("FIREBASE_CLIENT_ID")
         ]):
-            print("🔄 Loading Firebase credentials from environment variables...")
+            print("Loading Firebase credentials from environment variables...")
             firebase_credentials = {
                 "type": os.getenv("FIREBASE_TYPE"),
                 "project_id": os.getenv("FIREBASE_PROJECT_ID"),
@@ -56,25 +54,25 @@ def initialize_firebase():
                 "universe_domain": "googleapis.com"
             }
             cred = credentials.Certificate(firebase_credentials)
-            print("✅ Firebase credentials loaded from environment variables")
+            print("Firebase credentials loaded from environment variables")
             
         # Method 2: Fall back to JSON file (for Local Development)
         else:
-            print("🔄 Loading Firebase credentials from JSON file...")
+            print("Loading Firebase credentials from JSON file...")
             firebase_credentials_path = os.getenv("FIREBASE_CREDENTIALS", "project-maiscan-firebase-adminsdk-fbsvc-8491da1d45.json")
             
             if not firebase_credentials_path or not os.path.exists(firebase_credentials_path):
                 raise FileNotFoundError(f"Firebase credentials file not found: {firebase_credentials_path}")
             
             cred = credentials.Certificate(firebase_credentials_path)
-            print(f"✅ Firebase credentials loaded from JSON file: {firebase_credentials_path}")
+            print(f"Firebase credentials loaded from JSON file: {firebase_credentials_path}")
         
         # Initialize Firebase Admin SDK
         firebase_admin.initialize_app(cred)
         return firestore.client()
         
     except Exception as e:
-        print(f"❌ Firebase initialization error: {e}")
+        print(f"Firebase initialization error: {e}")
         raise e
 
 # Initialize Firebase
@@ -100,16 +98,16 @@ def initialize_pyrebase():
         missing_fields = [field for field in required_fields if not firebaseConfig.get(field)]
         
         if missing_fields:
-            print(f"⚠️ Missing Pyrebase config fields: {missing_fields}")
+            print(f"Missing Pyrebase config fields: {missing_fields}")
             return None
         
         pb = pyrebase.initialize_app(firebaseConfig)
         pb_auth = pb.auth()
-        print("✅ Pyrebase initialized successfully")
+        print("Pyrebase initialized successfully")
         return pb, pb_auth
         
     except Exception as e:
-        print(f"⚠️ Pyrebase initialization warning: {e}")
+        print(f"Pyrebase initialization warning: {e}")
         return None, None
 
 # Initialize Pyrebase
@@ -144,58 +142,78 @@ def load_user(user_id):
         print("Error loading user:", e)
         return None
 
-
+# ---------------- MODEL DOWNLOAD AND LOADING ----------------
 def download_model_from_mega():
     model_path = "maiscan_disease_model_final.keras"
     
     # Check if model already exists
     if os.path.exists(model_path):
-        print(f"Model already exists: {model_path}")
+        file_size = os.path.getsize(model_path)
+        print(f"Model already exists: {model_path} ({file_size} bytes)")
         return model_path
     
     print("Downloading model from Mega...")
     try:
+        # Try importing mega - this might fail on some systems
+        from mega import Mega
+        
         # Initialize Mega client
         mega = Mega()
         m = mega.login()  # Anonymous login
         
-        # Your Mega URL components
+        # Your Mega URL
         mega_url = "https://mega.nz/file/eoQTgJaR#maLXsn2jC5kTGnwGpdEi9DGUcbSslRXhs5NgC2iqxU4"
         
         # Download the file
         m.download_url(mega_url, dest_filename=model_path)
         
-        print("Model downloaded successfully from Mega")
-        return model_path
+        if os.path.exists(model_path):
+            file_size = os.path.getsize(model_path)
+            print(f"Model downloaded successfully from Mega ({file_size} bytes)")
+            return model_path
+        else:
+            print("Model download completed but file not found")
+            return None
         
+    except ImportError:
+        print("Mega library not available - cannot download model")
+        return None
     except Exception as e:
         print(f"Error downloading model from Mega: {e}")
         return None
 
-# ---------------- LOAD ML MODEL ----------------
-try:
-    # Download model if it doesn't exist
+def load_ml_model():
+    """Load the ML model with proper error handling"""
+    print("=" * 50)
+    print("INITIALIZING ML MODEL")
+    print("=" * 50)
+    
+    # Debug: Check current directory and files
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Files in current directory: {os.listdir('.')}")
+    
+    # Try to download model from Mega
     model_path = download_model_from_mega()
     
-    if model_path and os.path.exists(model_path):
+    if not model_path or not os.path.exists(model_path):
+        print("MODEL NOT FOUND - ML functionality will be disabled")
+        return None
+    
+    try:
         print(f"Loading model from: {model_path}")
         model = load_model(model_path)
-        print("✓ Model Loaded Successfully")
-    else:
-        print("✗ Model file not available")
-        model = None
+        print("MODEL LOADED SUCCESSFULLY")
+        print("=" * 50)
+        return model
         
-except Exception as e:
-    print(f"✗ Error loading model: {e}")
-    model = None
+    except Exception as e:
+        print(f"ERROR LOADING MODEL: {e}")
+        print("ML functionality will be disabled")
+        print("=" * 50)
+        return None
 
-# ---------------- LOAD ML MODEL ----------------
-# try:
-#     model = load_model("maiscan_disease_model_final.keras")
-#     print("✓ Model Loaded Successfully")
-# except Exception as e:
-#     print(f"✗ Error loading model: {e}")
-#     model = None
+# Initialize ML Model
+model = load_ml_model()
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -217,10 +235,10 @@ def register():
             return render_template("register.html")
 
         try:
-            # ✅ Create user in Firebase Authentication
+            # Create user in Firebase Authentication
             user_record = auth.create_user(email=email, password=password)
 
-            # ✅ Save extra data in Firestore
+            # Save extra data in Firestore
             db.collection("Users").document(user_record.uid).set({
                 "email": email,
                 "created_at": datetime.datetime.utcnow()
@@ -247,10 +265,15 @@ def login():
             return render_template("login.html")
 
         try:
-            # ✅ Authenticate with Firebase using Pyrebase
+            # Check if pyrebase is available
+            if pb_auth is None:
+                flash("Authentication service not available.", "danger")
+                return render_template("login.html")
+            
+            # Authenticate with Firebase using Pyrebase
             user = pb_auth.sign_in_with_email_and_password(email, password)
 
-            # ✅ Get Firebase user record
+            # Get Firebase user record
             user_record = auth.get_user(user["localId"])
 
             # Flask-Login user
@@ -277,6 +300,10 @@ def forgot_password():
             return render_template("forgot_password.html")
         
         try:
+            if pb_auth is None:
+                flash("Password reset service not available.", "danger")
+                return render_template("forgot_password.html")
+                
             # Send password reset email
             pb_auth.send_password_reset_email(email)
             flash("Password reset email sent! Check your inbox.", "success")
@@ -297,8 +324,6 @@ def forgot_password():
 # -------- RESET PASSWORD --------
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
-    # This is typically handled by Firebase directly via email link
-    # We'll just show a confirmation page
     return render_template("reset_password.html")
 
 # -------- LOGOUT --------
@@ -343,13 +368,12 @@ def update_account():
 
     return redirect(url_for("maiscan"))
 
-
 # -------- MAISCAN DASHBOARD --------
 @app.route("/maiscan")
 @login_required
 def maiscan():
     try:
-        # ✅ Fetch user’s uploads from Firestore
+        # Fetch user's uploads from Firestore
         uploads_ref = db.collection("UploadedImages").where("user_id", "==", current_user.id)
         uploads = [doc.to_dict() for doc in uploads_ref.stream()]
 
@@ -382,101 +406,13 @@ def maiscan():
         disease_types=disease_types
     )
 
-# -------- PREDICTION --------
-@app.route("/predict", methods=["POST"])
-@login_required
-def predict():
-    if model is None:
-        flash("ML model is currently unavailable. Please try again later.", "danger")
-        return redirect(url_for("maiscan"))
-    
-    if "image" not in request.files:
-        flash("No image uploaded.", "danger")
-        return redirect(url_for("maiscan"))
-
-    file = request.files["image"]
-    if file.filename == "" or not allowed_file(file.filename):
-        flash("Invalid file type.", "danger")
-        return redirect(url_for("maiscan"))
-
-    try:
-        # Save file
-        filename = secure_filename(file.filename)
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_")
-        filename = timestamp + filename
-        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(file_path)
-
-        # Predict
-        pred, output_page, confidence = pred_corn_disease(file_path)
-
-        # ✅ Save metadata to Firestore (not the image itself)
-        if pred != "Unknown Class":
-            db.collection("UploadedImages").add({
-                "filename": filename,
-                "user_id": current_user.id,
-                "disease_type": pred,
-                "confidence": confidence,
-                "upload_date": datetime.datetime.utcnow()
-            })
-
-        return render_template(output_page, pred_output=pred, user_image=file_path, confidence=confidence)
-
-    except Exception as e:
-        print("Prediction error:", e)
-        flash("Error processing image.", "danger")
-        return redirect(url_for("maiscan"))
-
-# -------- PREDICTION REALTIME --------
-@app.route("/api/predict", methods=['POST'])
-@login_required
-def api_predict():
-    if model is None:
-        return jsonify({
-            "valid": False, 
-            "error": "ML model is currently unavailable", 
-            "disease": "", 
-            "confidence": 0
-        })
-           
-    if 'image' not in request.files:
-        return jsonify({"valid": False, "error": "No image provided", "disease": "", "confidence": 0})
-            
-    file = request.files['image']
-    if file.filename == '':
-        return jsonify({"valid": False, "error": "No file selected", "disease": "", "confidence": 0})
-            
-    # Save temporary file
-    filename = secure_filename(f"temp_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(file_path)
-    
-    try:
-        # Predict disease
-        pred, _, confidence = pred_corn_disease(file_path)
-        
-        # Clean up temporary file
-        os.remove(file_path)
-        
-        # Check if it's an invalid image
-        is_valid = not pred.startswith("Invalid Image")
-        
-        return jsonify({
-            "valid": is_valid,
-            "disease": pred if is_valid else "",
-            "confidence": confidence,
-            "error": pred if not is_valid else ""
-        })
-            
-    except Exception as e:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        print(f"Error in API prediction: {e}")
-        return jsonify({"valid": False, "error": "Prediction failed", "disease": "", "confidence": 0}), 500
-
 # -------- PREDICTION FUNCTION --------
 def pred_corn_disease(img_path):
+    """Predict corn disease from image path"""
     try:
+        if model is None:
+            return "Model Not Available", "invalid_image.html", 0.0
+            
         img = load_img(img_path, target_size=(224, 224))
         img_array = img_to_array(img) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
@@ -509,16 +445,122 @@ def pred_corn_disease(img_path):
 
     except Exception as e:
         print("Error in prediction:", e)
-        return "Error", "invalid_image.html", 0.0
+        return "Error in Prediction", "invalid_image.html", 0.0
 
-# -------- ERROR HANDLERS --------
-# @app.errorhandler(404)
-# def not_found_error(e):
-#     return render_template("404.html"), 404
+# -------- PREDICTION --------
+@app.route("/predict", methods=["POST"])
+@login_required
+def predict():
+    print("=" * 50)
+    print("PREDICTION REQUEST RECEIVED")
+    print(f"Model status: {'Available' if model is not None else 'NOT AVAILABLE'}")
+    
+    if model is None:
+        print("Model is None - redirecting with error")
+        flash("ML model is currently unavailable. Please contact support.", "danger")
+        return redirect(url_for("maiscan"))
+    
+    if "image" not in request.files:
+        print("No image in request files")
+        flash("No image uploaded.", "danger")
+        return redirect(url_for("maiscan"))
 
-# @app.errorhandler(500)
-# def internal_error(e):
-#     return render_template("500.html"), 500
+    file = request.files["image"]
+    print(f"File received: {file.filename}")
+    
+    if file.filename == "" or not allowed_file(file.filename):
+        print("Invalid file")
+        flash("Invalid file type. Please upload PNG, JPG, or JPEG files.", "danger")
+        return redirect(url_for("maiscan"))
+
+    try:
+        # Save file
+        filename = secure_filename(file.filename)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_")
+        filename = timestamp + filename
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(file_path)
+        print(f"File saved to: {file_path}")
+
+        # Predict
+        print("Starting prediction...")
+        pred, output_page, confidence = pred_corn_disease(file_path)
+        print(f"Prediction result: {pred}, Template: {output_page}, Confidence: {confidence}")
+
+        # Save metadata to Firestore (only for valid predictions)
+        if pred not in ["Unknown Class", "Model Not Available", "Error in Prediction"]:
+            try:
+                db.collection("UploadedImages").add({
+                    "filename": filename,
+                    "user_id": current_user.id,
+                    "disease_type": pred,
+                    "confidence": confidence,
+                    "upload_date": datetime.datetime.utcnow()
+                })
+                print("Prediction saved to Firestore")
+            except Exception as db_error:
+                print(f"Error saving to Firestore: {db_error}")
+
+        print(f"Rendering template: {output_page}")
+        return render_template(output_page, pred_output=pred, user_image=file_path, confidence=confidence)
+
+    except Exception as e:
+        print(f"Prediction error: {e}")
+        import traceback
+        traceback.print_exc()
+        flash("Error processing image. Please try again.", "danger")
+        return redirect(url_for("maiscan"))
+
+# -------- PREDICTION REALTIME --------
+@app.route("/api/predict", methods=['POST'])
+@login_required
+def api_predict():
+    print("API prediction request received")
+    print(f"Model status: {'Available' if model is not None else 'NOT AVAILABLE'}")
+    
+    if model is None:
+        return jsonify({
+            "valid": False, 
+            "error": "ML model is currently unavailable", 
+            "disease": "", 
+            "confidence": 0
+        })
+           
+    if 'image' not in request.files:
+        return jsonify({"valid": False, "error": "No image provided", "disease": "", "confidence": 0})
+            
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({"valid": False, "error": "No file selected", "disease": "", "confidence": 0})
+            
+    # Save temporary file
+    filename = secure_filename(f"temp_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
+    
+    try:
+        # Predict disease
+        pred, _, confidence = pred_corn_disease(file_path)
+        
+        # Clean up temporary file
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        
+        # Check if it's a valid prediction
+        is_valid = pred not in ["Model Not Available", "Error in Prediction", "Unknown Class"]
+        
+        return jsonify({
+            "valid": is_valid,
+            "disease": pred if is_valid else "",
+            "confidence": confidence,
+            "error": pred if not is_valid else ""
+        })
+            
+    except Exception as e:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        print(f"Error in API prediction: {e}")
+        return jsonify({"valid": False, "error": "Prediction failed", "disease": "", "confidence": 0}), 500
 
 if __name__ == "__main__":
     # Get port from environment variable (Render sets this)
