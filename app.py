@@ -180,7 +180,7 @@ def home():
 @app.route("/debug")
 def debug():
     model_status = "Loaded" if model is not None else "Not Loaded"
-    model_path_debug = os.path.join(os.path.dirname(os.path.abspath(__file__)), "maiscan_disease_model_final.keras")
+    model_path_debug = os.path.join(os.path.dirname(os.path.abspath(__file__)), "maiscan_disease_model_final.h5")
     model_exists = os.path.exists(model_path_debug)
     
     return jsonify({
