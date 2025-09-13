@@ -155,7 +155,7 @@ try:
     from keras.models import load_model   # ✅ Use Keras 3 loader
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.keras")
+    model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.h5")
 
     if os.path.exists(model_path):
         print(f"🔄 Loading model from: {model_path}")
