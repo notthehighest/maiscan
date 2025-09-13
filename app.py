@@ -8,8 +8,8 @@ import os
 from werkzeug.utils import secure_filename
 import secrets
 import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from keras.models import load_model
+from keras.preprocessing.image import load_img, img_to_array
 from dotenv import load_dotenv
 
 
@@ -152,31 +152,22 @@ def load_user(user_id):
 
 # ---------------- LOAD ML MODEL ----------------
 try:
+    from keras.models import load_model   # ✅ Use Keras 3 loader, not tensorflow.keras
+
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    possible_paths = [
-        os.path.join(BASE_DIR, "maiscan_disease_model_final.keras"),
-        os.path.join(BASE_DIR, "maiscan_disease_model_final"),  # SavedModel folder
-        os.path.join(BASE_DIR, "static", "maiscan_disease_model_final.keras"),
-        os.path.join(BASE_DIR, "models", "maiscan_disease_model_final.keras"),
-    ]
+    model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.h5")
 
-    model = None
-    model_path = None
-    for path in possible_paths:
-        if os.path.exists(path):
-            print(f"🔄 Attempting to load model from: {path}")
-            model = load_model(path)
-            model_path = path
-            print("✅ Model loaded successfully")
-            break
-
-    if not model:
-        print("❌ No valid model file found in any of the expected locations")
+    if os.path.exists(model_path):
+        print(f"🔄 Loading model from: {model_path}")
+        model = load_model(model_path)
+        print("✅ Model loaded successfully")
+    else:
+        print(f"❌ Model file not found at {model_path}")
+        model = None
 
 except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
-    model_path = None
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -499,7 +490,7 @@ def pred_corn_disease(img_path):
 
     except Exception as e:
         print("Error in prediction:", e)
-        return "Error", "invalid_image.html", 0.0
+        return "Unknown", "invalid_image.html", 0.0
 
 if __name__ == "__main__":
     # Get port from environment variable (Render sets this)
