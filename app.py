@@ -11,6 +11,7 @@ import numpy as np
 from keras.models import load_model
 from keras.preprocessing.image import load_img, img_to_array
 from dotenv import load_dotenv
+import gdown
 
 
 # ---------------- LOAD ENV ----------------
@@ -152,18 +153,25 @@ def load_user(user_id):
 
 # ---------------- LOAD ML MODEL ----------------
 try:
-    from keras.models import load_model   # ✅ Use Keras 3 loader
+    from keras.models import load_model
+
+    # Google Drive file ID
+    FILE_ID = os.getenv("MODEL_FILE_ID", "1b-n8usXAIBmsBV8TqPz4nkIXqqcBM-fP")
+    MODEL_URL = f"https://drive.google.com/uc?id={FILE_ID}"
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.h5")
 
-    if os.path.exists(model_path):
-        print(f"🔄 Loading model from: {model_path}")
-        model = load_model(model_path, compile=False)  # ✅ prevent training config errors
-        print("✅ Model loaded successfully")
-    else:
-        print(f"❌ Model file not found at {model_path}")
-        model = None
+    # Download model if it doesn't already exist
+    if not os.path.exists(model_path):
+        print("🔄 Downloading model from Google Drive...")
+        gdown.download(MODEL_URL, model_path, quiet=False)
+        print("✅ Model downloaded")
+
+    # Load the model
+    print(f"🔄 Loading model from: {model_path}")
+    model = load_model(model_path, compile=False)
+    print("✅ Model loaded successfully")
 
 except Exception as e:
     print(f"❌ Error loading model: {e}")
