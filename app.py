@@ -11,6 +11,9 @@ import numpy as np
 from keras.models import load_model
 from keras.preprocessing.image import load_img, img_to_array
 from dotenv import load_dotenv
+import tensorflow as tf
+import keras
+
 
 
 # ---------------- LOAD ENV ----------------
@@ -150,6 +153,10 @@ def load_user(user_id):
         return None
 
 
+print(f"🐍 Python version: {sys.version}")
+print(f"🔥 TensorFlow version: {tf.__version__}")
+print(f"🧠 Keras version: {keras.__version__}")
+
 # ---------------- LOAD ML MODEL ----------------
 # ---------------- LOAD ML MODEL ----------------
 try:
@@ -158,29 +165,37 @@ try:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.h5")
     
-    print(f"📁 Current working directory: {os.getcwd()}")
-    print(f"📁 Files in directory: {os.listdir('.')}")
     print(f"📁 Model path: {model_path}")
     
     if os.path.exists(model_path):
         print(f"✅ Model found at: {model_path}")
         print(f"📊 Model size: {os.path.getsize(model_path) / (1024*1024):.2f} MB")
         print("🔄 Loading model...")
-        model = load_model(model_path, compile=False)
-        print("✅ Model loaded successfully")
+        
+        # Try different loading approaches
+        try:
+            # Method 1: Standard load
+            model = load_model(model_path)
+            print("✅ Model loaded successfully with standard method")
+        except Exception as e1:
+            print(f"⚠️ Standard load failed: {e1}")
+            try:
+                # Method 2: Load without compilation
+                model = load_model(model_path, compile=False)
+                print("✅ Model loaded successfully with compile=False")
+            except Exception as e2:
+                print(f"⚠️ Compile=False load failed: {e2}")
+                try:
+                    # Method 3: Try custom objects if needed
+                    model = load_model(model_path, compile=False, safe_mode=False)
+                    print("✅ Model loaded successfully with safe_mode=False")
+                except Exception as e3:
+                    print(f"❌ All loading methods failed: {e3}")
+                    model = None
+
     else:
         print(f"❌ Model file not found at {model_path}")
-        # Try to find it elsewhere
-        for root, dirs, files in os.walk('.'):
-            if "maiscan_disease_model_final.h5" in files:
-                alt_path = os.path.join(root, "maiscan_disease_model_final.h5")
-                print(f"🔍 Found model at alternative path: {alt_path}")
-                model = load_model(alt_path, compile=False)
-                print("✅ Model loaded from alternative path")
-                break
-        else:
-            print("❌ Model not found anywhere")
-            model = None
+        model = None
 
 except Exception as e:
     print(f"❌ Error loading model: {e}")
