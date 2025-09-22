@@ -153,7 +153,6 @@ def load_user(user_id):
 
 # ---------------- LOAD ML MODEL ----------------
 try:
-    from keras.models import load_model
 
     # Google Drive file ID
     FILE_ID = os.getenv("MODEL_FILE_ID", "1b-n8usXAIBmsBV8TqPz4nkIXqqcBM-fP")
