@@ -151,22 +151,41 @@ def load_user(user_id):
 
 
 # ---------------- LOAD ML MODEL ----------------
+# ---------------- LOAD ML MODEL ----------------
 try:
-    from keras.models import load_model   # ✅ Use Keras 3 loader
+    from keras.models import load_model
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.h5")
-
+    
+    print(f"📁 Current working directory: {os.getcwd()}")
+    print(f"📁 Files in directory: {os.listdir('.')}")
+    print(f"📁 Model path: {model_path}")
+    
     if os.path.exists(model_path):
-        print(f"🔄 Loading model from: {model_path}")
-        model = load_model(model_path, compile=False)  # ✅ prevent training config errors
+        print(f"✅ Model found at: {model_path}")
+        print(f"📊 Model size: {os.path.getsize(model_path) / (1024*1024):.2f} MB")
+        print("🔄 Loading model...")
+        model = load_model(model_path, compile=False)
         print("✅ Model loaded successfully")
     else:
         print(f"❌ Model file not found at {model_path}")
-        model = None
+        # Try to find it elsewhere
+        for root, dirs, files in os.walk('.'):
+            if "maiscan_disease_model_final.h5" in files:
+                alt_path = os.path.join(root, "maiscan_disease_model_final.h5")
+                print(f"🔍 Found model at alternative path: {alt_path}")
+                model = load_model(alt_path, compile=False)
+                print("✅ Model loaded from alternative path")
+                break
+        else:
+            print("❌ Model not found anywhere")
+            model = None
 
 except Exception as e:
     print(f"❌ Error loading model: {e}")
+    import traceback
+    traceback.print_exc()
     model = None
 
 def allowed_file(filename):
