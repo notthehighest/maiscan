@@ -8,11 +8,15 @@ import os
 from werkzeug.utils import secure_filename
 import secrets
 import numpy as np
-from keras.models import load_model
-from keras.preprocessing.image import load_img, img_to_array
+from tensorflow.keras.models import load_model
+from tensorflow.keras.utils import load_img, img_to_array
 from dotenv import load_dotenv
 import gdown
+import logging
 
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # ---------------- LOAD ENV ----------------
 load_dotenv()
@@ -150,31 +154,89 @@ def load_user(user_id):
         print("Error loading user:", e)
         return None
 
+# ---------------- ML MODEL LOADING ----------------
+model = None
 
-# ---------------- LOAD ML MODEL ----------------
-try:
+def load_ml_model():
+    """Load ML model with compatibility for TensorFlow 2.16.1 and Keras 3.2.0"""
+    global model
+    
+    try:
+        # Clear any existing TensorFlow session
+        import tensorflow as tf
+        tf.keras.backend.clear_session()
+        
+        # Google Drive file ID
+        FILE_ID = os.getenv("MODEL_FILE_ID", "1b-n8usXAIBmsBV8TqPz4nkIXqqcBM-fP")
+        MODEL_URL = f"https://drive.google.com/uc?id={FILE_ID}"
 
-    # Google Drive file ID
-    FILE_ID = os.getenv("MODEL_FILE_ID", "1b-n8usXAIBmsBV8TqPz4nkIXqqcBM-fP")
-    MODEL_URL = f"https://drive.google.com/uc?id={FILE_ID}"
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.h5")
 
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.h5")
+        # Debug: Check current directory and files
+        logger.debug(f"Current directory: {BASE_DIR}")
+        logger.debug(f"Files in directory: {os.listdir(BASE_DIR)}")
+        logger.debug(f"Model path: {model_path}")
 
-    # Download model if it doesn't already exist
-    if not os.path.exists(model_path):
-        print("🔄 Downloading model from Google Drive...")
-        gdown.download(MODEL_URL, model_path, quiet=False)
-        print("✅ Model downloaded")
+        # Download model if it doesn't already exist
+        if not os.path.exists(model_path):
+            print("🔄 Downloading model from Google Drive...")
+            try:
+                gdown.download(MODEL_URL, model_path, quiet=False)
+                print("✅ Model downloaded successfully")
+                
+                # Verify the file was downloaded
+                if os.path.exists(model_path):
+                    file_size = os.path.getsize(model_path)
+                    print(f"✅ Model file size: {file_size} bytes")
+                else:
+                    print("❌ Model file not found after download")
+                    return
+                    
+            except Exception as download_error:
+                print(f"❌ Error downloading model: {download_error}")
+                return
 
-    # Load the model
-    print(f"🔄 Loading model from: {model_path}")
-    model = load_model(model_path, compile=False)
-    print("✅ Model loaded successfully")
+        # Verify model file exists and has content
+        if os.path.exists(model_path):
+            file_size = os.path.getsize(model_path)
+            print(f"📁 Model file exists, size: {file_size} bytes")
+            
+            if file_size == 0:
+                print("❌ Model file is empty")
+                os.remove(model_path)  # Remove empty file
+                return
+        else:
+            print("❌ Model file does not exist")
+            return
 
-except Exception as e:
-    print(f"❌ Error loading model: {e}")
-    model = None
+        # Load the model with improved error handling
+        print("🔄 Loading model...")
+        try:
+            # For TensorFlow 2.16.1 + Keras 3.2.0 compatibility
+            model = load_model(model_path, compile=False)
+            print("✅ Model loaded successfully")
+            
+            # Test the model with a simple prediction
+            test_input = np.random.random((1, 224, 224, 3)).astype(np.float32)
+            test_prediction = model.predict(test_input, verbose=0)
+            print(f"✅ Model test prediction shape: {test_prediction.shape}")
+            
+        except Exception as load_error:
+            print(f"❌ Error loading model: {load_error}")
+            model = None
+            # Try to clean up corrupted file
+            if os.path.exists(model_path):
+                os.remove(model_path)
+                print("🗑️ Removed potentially corrupted model file")
+
+    except Exception as e:
+        print(f"❌ Unexpected error in model loading: {e}")
+        model = None
+
+# Load the model when the app starts
+print("🚀 Starting ML model loading...")
+load_ml_model()
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -189,12 +251,19 @@ def debug():
     model_status = "Loaded" if model is not None else "Not Loaded"
     model_path_debug = os.path.join(os.path.dirname(os.path.abspath(__file__)), "maiscan_disease_model_final.h5")
     model_exists = os.path.exists(model_path_debug)
+    file_size = os.path.getsize(model_path_debug) if model_exists else 0
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    files_in_dir = os.listdir(current_dir)
     
     return jsonify({
         "model_status": model_status,
         "model_path": model_path_debug,
         "model_exists": model_exists,
-        "files_in_dir": os.listdir(os.path.dirname(os.path.abspath(__file__)))
+        "model_file_size": file_size,
+        "current_directory": current_dir,
+        "files_in_dir": files_in_dir,
+        "upload_folder_exists": os.path.exists(app.config["UPLOAD_FOLDER"])
     })
 
 # -------- REGISTER --------
@@ -289,8 +358,6 @@ def forgot_password():
 # -------- RESET PASSWORD --------
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
-    # This is typically handled by Firebase directly via email link
-    # We'll just show a confirmation page
     return render_template("reset_password.html")
 
 # -------- LOGOUT --------
@@ -335,13 +402,12 @@ def update_account():
 
     return redirect(url_for("maiscan"))
 
-
 # -------- MAISCAN DASHBOARD --------
 @app.route("/maiscan")
 @login_required
 def maiscan():
     try:
-        # ✅ Fetch user’s uploads from Firestore
+        # ✅ Fetch user's uploads from Firestore
         uploads_ref = db.collection("UploadedImages").where("user_id", "==", current_user.id)
         uploads = [doc.to_dict() for doc in uploads_ref.stream()]
 
@@ -371,13 +437,18 @@ def maiscan():
         total_images=total_images,
         disease_count=disease_count,
         most_common_disease=most_common_disease,
-        disease_types=disease_types
+        disease_types=disease_types,
+        model_loaded=model is not None
     )
 
 # -------- PREDICTION --------
 @app.route("/predict", methods=["POST"])
 @login_required
 def predict():
+    if model is None:
+        flash("ML model is not available. Please try again later.", "danger")
+        return redirect(url_for("maiscan"))
+        
     if "image" not in request.files:
         flash("No image uploaded.", "danger")
         return redirect(url_for("maiscan"))
@@ -398,7 +469,7 @@ def predict():
         # Predict
         pred, output_page, confidence = pred_corn_disease(file_path)
 
-        # ✅ Save metadata to Firestore (not the image itself)
+        # ✅ Save metadata to Firestore
         if pred != "Unknown Class" and pred != "Model Error":
             db.collection("UploadedImages").add({
                 "filename": filename,
@@ -439,7 +510,8 @@ def api_predict():
         pred, _, confidence = pred_corn_disease(file_path)
         
         # Clean up temporary file
-        os.remove(file_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
         
         # Check if it's an invalid image
         is_valid = not pred.startswith("Invalid Image") and not pred.startswith("Model Error")
@@ -464,15 +536,22 @@ def pred_corn_disease(img_path):
         return "Model Error", "invalid_image.html", 0.0
     
     try:
+        # Verify image file exists
+        if not os.path.exists(img_path):
+            print(f"❌ Image file not found: {img_path}")
+            return "Invalid Image", "invalid_image.html", 0.0
+            
+        # Load and preprocess image - using tf.keras.utils.load_img for Keras 3.x
         img = load_img(img_path, target_size=(224, 224))
         img_array = img_to_array(img) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
 
-        prediction = model.predict(img_array)
+        # Make prediction
+        prediction = model.predict(img_array, verbose=0)
         pred_class = np.argmax(prediction)
         confidence = float(np.max(prediction))
 
-        CONFIDENCE_THRESHOLD = 0.5
+        CONFIDENCE_THRESHOLD = 0.7
         if confidence < CONFIDENCE_THRESHOLD:
             return "Unknown Class", "invalid_image.html", confidence
 
@@ -496,10 +575,26 @@ def pred_corn_disease(img_path):
         return disease_name, template_name, confidence
 
     except Exception as e:
-        print("Error in prediction:", e)
-        return "Unknown", "invalid_image.html", 0.0
+        print(f"❌ Error in prediction: {e}")
+        return "Prediction Error", "invalid_image.html", 0.0
+
+# Health check endpoint for Render
+@app.route('/health')
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'model_loaded': model is not None,
+        'timestamp': datetime.datetime.utcnow().isoformat()
+    })
 
 if __name__ == "__main__":
     # Get port from environment variable (Render sets this)
     port = int(os.environ.get("PORT", 8080))
+    
+    # Debug information
+    print(f"🚀 Starting Flask app on port {port}")
+    print(f"📁 Current directory: {os.getcwd()}")
+    print(f"📁 Files in directory: {os.listdir('.')}")
+    print(f"✅ Model status: {'Loaded' if model is not None else 'Not loaded'}")
+    
     app.run(debug=False, host="0.0.0.0", port=port, threaded=True)
