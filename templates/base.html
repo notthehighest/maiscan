@@ -21,6 +21,7 @@
         body {
             font-family: 'Montserrat', sans-serif;
             background: linear-gradient(135deg, #f5fdf4 0%, #e8f5e9 100%);
+            overflow-x: hidden;
         }
         
         .glass-card {
@@ -44,12 +45,14 @@
             background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .gradient-text-yellow {
             background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--dark-yellow) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .nav-glass {
@@ -136,6 +139,62 @@
         .testimonial-card:hover {
             transform: scale(1.05);
         }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .section-title:after {
+                width: 40%;
+            }
+            
+            .feature-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .mobile-padding {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .mobile-stack {
+                flex-direction: column;
+            }
+            
+            .mobile-center {
+                text-align: center;
+            }
+            
+            .mobile-margin-bottom {
+                margin-bottom: 2rem;
+            }
+            
+            .mobile-full-width {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.75rem;
+            }
+            
+            .mobile-text-sm {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body class="font-[Montserrat]">
@@ -199,59 +258,59 @@
     {% endwith %}
 
     <!-- Hero Section -->
-    <section id="home" class="min-h-screen flex flex-col justify-center items-center relative overflow-hidden pt-16">
+    <section id="home" class="min-h-screen flex flex-col justify-center items-center relative overflow-hidden pt-16 mobile-padding">
         <!-- Background elements -->
         <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-            <div class="absolute -top-40 -right-40 w-80 h-80 rounded-full gradient-bg opacity-20"></div>
-            <div class="absolute -bottom-40 -left-40 w-80 h-80 rounded-full gradient-bg-yellow opacity-20"></div>
-            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-green-100 opacity-30"></div>
+            <div class="absolute -top-20 -right-20 md:-top-40 md:-right-40 w-40 h-40 md:w-80 md:h-80 rounded-full gradient-bg opacity-20"></div>
+            <div class="absolute -bottom-20 -left-20 md:-bottom-40 md:-left-40 w-40 h-40 md:w-80 md:h-80 rounded-full gradient-bg-yellow opacity-20"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-96 md:h-96 rounded-full bg-green-100 opacity-30"></div>
         </div>
         
-        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center z-10">
-            <div class="md:w-1/2 mb-10 md:mb-0">
-                <h1 class="text-5xl md:text-6xl font-bold mb-6">
+        <div class="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center z-10">
+            <div class="md:w-1/2 mb-10 md:mb-0 mobile-center">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 hero-title">
                     <span class="gradient-text">Revolutionizing</span>
                     <span class="block gradient-text-yellow">Corn Farming</span>
                 </h1>
-                <p class="text-xl text-gray-700 mb-8">Advanced AI-powered solution for early corn disease detection and prevention. Maximize your yield with cutting-edge technology.</p>
-                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                    <a href="{{ url_for('register') }}" class="btn-primary px-8 py-3 rounded-full font-semibold text-center">
+                <p class="text-lg md:text-xl text-gray-700 mb-8 mobile-text-sm">Advanced AI-powered solution for early corn disease detection and prevention. Maximize your yield with cutting-edge technology.</p>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mobile-stack">
+                    <a href="{{ url_for('register') }}" class="btn-primary px-6 py-3 md:px-8 md:py-3 rounded-full font-semibold text-center mobile-full-width">
                         <i class="fas fa-rocket mr-2"></i>Get Started
                     </a>
-                    <a href="#features" class="btn-secondary px-8 py-3 rounded-full font-semibold text-center">
+                    <a href="#features" class="btn-secondary px-6 py-3 md:px-8 md:py-3 rounded-full font-semibold text-center mobile-full-width">
                         <i class="fas fa-play-circle mr-2"></i>How It Works
                     </a>
                 </div>
                 
-                <div class="mt-12 grid grid-cols-3 gap-6">
+                <div class="mt-8 md:mt-12 grid grid-cols-3 gap-4 md:gap-6">
                     <div class="text-center">
-                        <h3 class="text-3xl font-bold gradient-text">98%</h3>
-                        <p class="text-gray-600">Accuracy Rate</p>
+                        <h3 class="text-2xl md:text-3xl font-bold gradient-text">98%</h3>
+                        <p class="text-gray-600 text-sm md:text-base">Accuracy Rate</p>
                     </div>
                     <div class="text-center">
-                        <h3 class="text-3xl font-bold gradient-text">5000+</h3>
-                        <p class="text-gray-600">Farmers Served</p>
+                        <h3 class="text-2xl md:text-3xl font-bold gradient-text">5000+</h3>
+                        <p class="text-gray-600 text-sm md:text-base">Farmers Served</p>
                     </div>
                     <div class="text-center">
-                        <h3 class="text-3xl font-bold gradient-text">24/7</h3>
-                        <p class="text-gray-600">Support</p>
+                        <h3 class="text-2xl md:text-3xl font-bold gradient-text">24/7</h3>
+                        <p class="text-gray-600 text-sm md:text-base">Support</p>
                     </div>
                 </div>
             </div>
             
-            <div class="md:w-1/2 flex justify-center">
+            <div class="md:w-1/2 flex justify-center mt-8 md:mt-0">
                 <div class="relative">
-                    <div class="glass-card p-6 rounded-2xl floating">
-                        <img src="https://images.unsplash.com/photo-1625246339666-38d955546ad7?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Corn Field" class="rounded-xl w-full max-w-md">
+                    <div class="glass-card p-4 md:p-6 rounded-2xl floating">
+                        <img src="https://images.unsplash.com/photo-1625246339666-38d955546ad7?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Corn Field" class="rounded-xl w-full max-w-xs md:max-w-md">
                     </div>
-                    <div class="absolute -bottom-6 -right-6 glass-card p-4 rounded-xl shadow-lg">
+                    <div class="absolute -bottom-4 -right-4 md:-bottom-6 md:-right-6 glass-card p-3 md:p-4 rounded-xl shadow-lg">
                         <div class="flex items-center">
-                            <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center text-white">
-                                <i class="fas fa-leaf"></i>
+                            <div class="w-8 h-8 md:w-12 md:h-12 rounded-full gradient-bg flex items-center justify-center text-white">
+                                <i class="fas fa-leaf text-sm md:text-base"></i>
                             </div>
-                            <div class="ml-3">
-                                <p class="font-semibold text-gray-800">Healthy Corn</p>
-                                <p class="text-sm text-gray-600">Detected by MAISCAN</p>
+                            <div class="ml-2 md:ml-3">
+                                <p class="font-semibold text-gray-800 text-sm md:text-base">Healthy Corn</p>
+                                <p class="text-xs md:text-sm text-gray-600">Detected by MAISCAN</p>
                             </div>
                         </div>
                     </div>
@@ -261,121 +320,121 @@
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="py-20 bg-white">
-        <div class="container mx-auto px-6">
-            <h2 class="text-4xl font-bold text-center mb-4 section-title">Why Choose MAISCAN</h2>
-            <p class="text-xl text-gray-600 text-center max-w-3xl mx-auto mb-16">Our cutting-edge technology combines artificial intelligence with agricultural expertise to deliver unparalleled results.</p>
+    <section id="features" class="py-16 md:py-20 bg-white mobile-padding">
+        <div class="container mx-auto px-4 md:px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 section-title mobile-center">Why Choose MAISCAN</h2>
+            <p class="text-lg md:text-xl text-gray-600 text-center max-w-3xl mx-auto mb-12 md:mb-16 mobile-text-sm">Our cutting-edge technology combines artificial intelligence with agricultural expertise to deliver unparalleled results.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="glass-card p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <div class="glass-card p-6 md:p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
                     <div class="feature-icon">
                         <i class="fas fa-robot"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold text-center mb-4 gradient-text">AI-Powered Detection</h3>
-                    <p class="text-gray-600 text-center">Our advanced machine learning algorithms accurately identify corn diseases from leaf images with 98% accuracy.</p>
+                    <h3 class="text-xl md:text-2xl font-semibold text-center mb-4 gradient-text">AI-Powered Detection</h3>
+                    <p class="text-gray-600 text-center mobile-text-sm">Our advanced machine learning algorithms accurately identify corn diseases from leaf images with 98% accuracy.</p>
                 </div>
                 
-                <div class="glass-card p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
+                <div class="glass-card p-6 md:p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
                     <div class="feature-icon">
                         <i class="fas fa-mobile-alt"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold text-center mb-4 gradient-text">Mobile Friendly</h3>
-                    <p class="text-gray-600 text-center">Access MAISCAN from any device. Our responsive design works perfectly on smartphones, tablets, and desktops.</p>
+                    <h3 class="text-xl md:text-2xl font-semibold text-center mb-4 gradient-text">Mobile Friendly</h3>
+                    <p class="text-gray-600 text-center mobile-text-sm">Access MAISCAN from any device. Our responsive design works perfectly on smartphones, tablets, and desktops.</p>
                 </div>
                 
-                <div class="glass-card p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
+                <div class="glass-card p-6 md:p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
                     <div class="feature-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold text-center mb-4 gradient-text">Real-Time Analytics</h3>
-                    <p class="text-gray-600 text-center">Get instant insights and detailed reports on your corn health, enabling quick decision-making.</p>
+                    <h3 class="text-xl md:text-2xl font-semibold text-center mb-4 gradient-text">Real-Time Analytics</h3>
+                    <p class="text-gray-600 text-center mobile-text-sm">Get instant insights and detailed reports on your corn health, enabling quick decision-making.</p>
                 </div>
                 
-                <div class="glass-card p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
+                <div class="glass-card p-6 md:p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
                     <div class="feature-icon">
                         <i class="fas fa-cloud-upload-alt"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold text-center mb-4 gradient-text">Cloud Storage</h3>
-                    <p class="text-gray-600 text-center">Securely store and access your detection history and reports from anywhere, anytime.</p>
+                    <h3 class="text-xl md:text-2xl font-semibold text-center mb-4 gradient-text">Cloud Storage</h3>
+                    <p class="text-gray-600 text-center mobile-text-sm">Securely store and access your detection history and reports from anywhere, anytime.</p>
                 </div>
                 
-                <div class="glass-card p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
+                <div class="glass-card p-6 md:p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
                     <div class="feature-icon">
                         <i class="fas fa-history"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold text-center mb-4 gradient-text">Detection History</h3>
-                    <p class="text-gray-600 text-center">Track your corn health over time with our comprehensive history and comparison tools.</p>
+                    <h3 class="text-xl md:text-2xl font-semibold text-center mb-4 gradient-text">Detection History</h3>
+                    <p class="text-gray-600 text-center mobile-text-sm">Track your corn health over time with our comprehensive history and comparison tools.</p>
                 </div>
                 
-                <div class="glass-card p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
+                <div class="glass-card p-6 md:p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
                     <div class="feature-icon">
                         <i class="fas fa-users"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold text-center mb-4 gradient-text">Expert Support</h3>
-                    <p class="text-gray-600 text-center">Our team of agricultural experts is available to help you interpret results and provide recommendations.</p>
+                    <h3 class="text-xl md:text-2xl font-semibold text-center mb-4 gradient-text">Expert Support</h3>
+                    <p class="text-gray-600 text-center mobile-text-sm">Our team of agricultural experts is available to help you interpret results and provide recommendations.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- About Section -->
-    <section id="about" class="py-20 gradient-bg">
-        <div class="container mx-auto px-6">
-            <h2 class="text-4xl font-bold text-center mb-4 text-white">About Corn & MAISCAN</h2>
-            <p class="text-xl text-white text-center max-w-3xl mx-auto mb-16">Understanding corn cultivation and how MAISCAN can help improve your yield.</p>
+    <section id="about" class="py-16 md:py-20 gradient-bg mobile-padding">
+        <div class="container mx-auto px-4 md:px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-white mobile-center">About Corn & MAISCAN</h2>
+            <p class="text-lg md:text-xl text-white text-center max-w-3xl mx-auto mb-12 md:mb-16 mobile-text-sm">Understanding corn cultivation and how MAISCAN can help improve your yield.</p>
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h3 class="text-3xl font-bold mb-6 text-white">The Importance of Corn</h3>
-                    <p class="text-white mb-6">Corn is one of the world's most important crops, serving as a staple food for millions and a key component in animal feed and industrial products. With global production exceeding 1 billion tons annually, maintaining healthy corn crops is crucial for food security and economic stability.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+                <div class="mobile-margin-bottom">
+                    <h3 class="text-2xl md:text-3xl font-bold mb-6 text-white">The Importance of Corn</h3>
+                    <p class="text-white mb-6 mobile-text-sm">Corn is one of the world's most important crops, serving as a staple food for millions and a key component in animal feed and industrial products. With global production exceeding 1 billion tons annually, maintaining healthy corn crops is crucial for food security and economic stability.</p>
                     
-                    <div class="grid grid-cols-2 gap-6 mb-8">
-                        <div class="glass-card p-4 rounded-xl text-center">
-                            <h4 class="text-2xl font-bold text-white mb-2">60%</h4>
-                            <p class="text-white">Of global corn production is for animal feed</p>
+                    <div class="grid grid-cols-2 gap-4 md:gap-6 mb-8">
+                        <div class="glass-card p-3 md:p-4 rounded-xl text-center">
+                            <h4 class="text-xl md:text-2xl font-bold text-white mb-2">60%</h4>
+                            <p class="text-white text-sm md:text-base">Of global corn production is for animal feed</p>
                         </div>
-                        <div class="glass-card p-4 rounded-xl text-center">
-                            <h4 class="text-2xl font-bold text-white mb-2">15%</h4>
-                            <p class="text-white">Yield loss due to diseases annually</p>
+                        <div class="glass-card p-3 md:p-4 rounded-xl text-center">
+                            <h4 class="text-xl md:text-2xl font-bold text-white mb-2">15%</h4>
+                            <p class="text-white text-sm md:text-base">Yield loss due to diseases annually</p>
                         </div>
                     </div>
                     
-                    <a href="#services" class="btn-secondary px-6 py-3 rounded-full font-semibold inline-block">
+                    <a href="#services" class="btn-secondary px-6 py-3 rounded-full font-semibold inline-block text-center mobile-full-width">
                         <i class="fas fa-seedling mr-2"></i>Learn More About Our Services
                     </a>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="glass-card p-6 rounded-xl">
-                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-green-600 mb-4">
+                <div class="grid grid-cols-2 gap-4 md:gap-6">
+                    <div class="glass-card p-4 md:p-6 rounded-xl">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center text-green-600 mb-3 md:mb-4">
                             <i class="fas fa-tint"></i>
                         </div>
-                        <h4 class="text-xl font-semibold text-white mb-2">Water Requirements</h4>
-                        <p class="text-white">Corn requires 20-35 inches of water during growing season for optimal yield.</p>
+                        <h4 class="text-lg md:text-xl font-semibold text-white mb-2">Water Requirements</h4>
+                        <p class="text-white text-sm md:text-base">Corn requires 20-35 inches of water during growing season for optimal yield.</p>
                     </div>
                     
-                    <div class="glass-card p-6 rounded-xl">
-                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-green-600 mb-4">
+                    <div class="glass-card p-4 md:p-6 rounded-xl">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center text-green-600 mb-3 md:mb-4">
                             <i class="fas fa-thermometer-half"></i>
                         </div>
-                        <h4 class="text-xl font-semibold text-white mb-2">Temperature</h4>
-                        <p class="text-white">Ideal temperature range is 60-95°F with optimal growth at 75-86°F.</p>
+                        <h4 class="text-lg md:text-xl font-semibold text-white mb-2">Temperature</h4>
+                        <p class="text-white text-sm md:text-base">Ideal temperature range is 60-95°F with optimal growth at 75-86°F.</p>
                     </div>
                     
-                    <div class="glass-card p-6 rounded-xl">
-                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-green-600 mb-4">
+                    <div class="glass-card p-4 md:p-6 rounded-xl">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center text-green-600 mb-3 md:mb-4">
                             <i class="fas fa-cloud-sun"></i>
                         </div>
-                        <h4 class="text-xl font-semibold text-white mb-2">Sunlight</h4>
-                        <p class="text-white">Corn needs full sun - at least 6-8 hours of direct sunlight daily.</p>
+                        <h4 class="text-lg md:text-xl font-semibold text-white mb-2">Sunlight</h4>
+                        <p class="text-white text-sm md:text-base">Corn needs full sun - at least 6-8 hours of direct sunlight daily.</p>
                     </div>
                     
-                    <div class="glass-card p-6 rounded-xl">
-                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-green-600 mb-4">
+                    <div class="glass-card p-4 md:p-6 rounded-xl">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center text-green-600 mb-3 md:mb-4">
                             <i class="fas fa-ruler-combined"></i>
                         </div>
-                        <h4 class="text-xl font-semibold text-white mb-2">Spacing</h4>
-                        <p class="text-white">Plant seeds 8-12 inches apart in rows 30-36 inches apart.</p>
+                        <h4 class="text-lg md:text-xl font-semibold text-white mb-2">Spacing</h4>
+                        <p class="text-white text-sm md:text-base">Plant seeds 8-12 inches apart in rows 30-36 inches apart.</p>
                     </div>
                 </div>
             </div>
@@ -383,82 +442,82 @@
     </section>
 
     <!-- Services Section -->
-    <section id="services" class="py-20 bg-white">
-        <div class="container mx-auto px-6">
-            <h2 class="text-4xl font-bold text-center mb-4 section-title">Our Services</h2>
-            <p class="text-xl text-gray-600 text-center max-w-3xl mx-auto mb-16">Comprehensive solutions for corn farmers to maximize yield and minimize losses.</p>
+    <section id="services" class="py-16 md:py-20 bg-white mobile-padding">
+        <div class="container mx-auto px-4 md:px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 section-title mobile-center">Our Services</h2>
+            <p class="text-lg md:text-xl text-gray-600 text-center max-w-3xl mx-auto mb-12 md:mb-16 mobile-text-sm">Comprehensive solutions for corn farmers to maximize yield and minimize losses.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="glass-card p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
-                    <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white mx-auto mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                <div class="glass-card p-5 md:p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
+                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full gradient-bg flex items-center justify-center text-white mx-auto mb-3 md:mb-4">
                         <i class="fas fa-bug"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3 gradient-text">Disease Detection</h3>
-                    <p class="text-gray-600 mb-4">AI-powered identification of common corn diseases from leaf images.</p>
-                    <ul class="text-left text-gray-600 mb-6">
+                    <h3 class="text-lg md:text-xl font-semibold mb-3 gradient-text">Disease Detection</h3>
+                    <p class="text-gray-600 mb-4 mobile-text-sm">AI-powered identification of common corn diseases from leaf images.</p>
+                    <ul class="text-left text-gray-600 mb-4 md:mb-6 mobile-text-sm">
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Early blight detection</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Rust identification</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Leaf spot analysis</li>
                     </ul>
-                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
+                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors text-sm md:text-base">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
                 
-                <div class="glass-card p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
-                    <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white mx-auto mb-4">
+                <div class="glass-card p-5 md:p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
+                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full gradient-bg flex items-center justify-center text-white mx-auto mb-3 md:mb-4">
                         <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3 gradient-text">Prevention Strategies</h3>
-                    <p class="text-gray-600 mb-4">Customized recommendations to prevent disease outbreaks.</p>
-                    <ul class="text-left text-gray-600 mb-6">
+                    <h3 class="text-lg md:text-xl font-semibold mb-3 gradient-text">Prevention Strategies</h3>
+                    <p class="text-gray-600 mb-4 mobile-text-sm">Customized recommendations to prevent disease outbreaks.</p>
+                    <ul class="text-left text-gray-600 mb-4 md:mb-6 mobile-text-sm">
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Crop rotation plans</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Soil management</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Pesticide guidance</li>
                     </ul>
-                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
+                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors text-sm md:text-base">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
                 
-                <div class="glass-card p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
-                    <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white mx-auto mb-4">
+                <div class="glass-card p-5 md:p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
+                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full gradient-bg flex items-center justify-center text-white mx-auto mb-3 md:mb-4">
                         <i class="fas fa-cogs"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3 gradient-text">Automatic Sorting</h3>
-                    <p class="text-gray-600 mb-4">Smart classification of corn based on quality and size parameters.</p>
-                    <ul class="text-left text-gray-600 mb-6">
+                    <h3 class="text-lg md:text-xl font-semibold mb-3 gradient-text">Automatic Sorting</h3>
+                    <p class="text-gray-600 mb-4 mobile-text-sm">Smart classification of corn based on quality and size parameters.</p>
+                    <ul class="text-left text-gray-600 mb-4 md:mb-6 mobile-text-sm">
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Size-based sorting</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Quality assessment</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Market readiness</li>
                     </ul>
-                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
+                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors text-sm md:text-base">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
                 
-                <div class="glass-card p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
-                    <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white mx-auto mb-4">
+                <div class="glass-card p-5 md:p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
+                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full gradient-bg flex items-center justify-center text-white mx-auto mb-3 md:mb-4">
                         <i class="fas fa-file-alt"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3 gradient-text">Detailed Reports</h3>
-                    <p class="text-gray-600 mb-4">Comprehensive analytics and insights for informed decision-making.</p>
-                    <ul class="text-left text-gray-600 mb-6">
+                    <h3 class="text-lg md:text-xl font-semibold mb-3 gradient-text">Detailed Reports</h3>
+                    <p class="text-gray-600 mb-4 mobile-text-sm">Comprehensive analytics and insights for informed decision-making.</p>
+                    <ul class="text-left text-gray-600 mb-4 md:mb-6 mobile-text-sm">
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Health status reports</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Growth progress</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Yield predictions</li>
                     </ul>
-                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
+                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors text-sm md:text-base">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
             </div>
             
-            <div class="mt-16 glass-card p-8 rounded-2xl">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div class="mt-12 md:mt-16 glass-card p-6 md:p-8 rounded-2xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center">
                     <div class="stat-card">
-                        <h3 class="text-4xl font-bold gradient-text mb-2">98%</h3>
-                        <p class="text-gray-600">Detection Accuracy</p>
+                        <h3 class="text-3xl md:text-4xl font-bold gradient-text mb-2">98%</h3>
+                        <p class="text-gray-600 text-sm md:text-base">Detection Accuracy</p>
                     </div>
                     <div class="stat-card">
-                        <h3 class="text-4xl font-bold gradient-text mb-2">30%</h3>
-                        <p class="text-gray-600">Average Yield Increase</p>
+                        <h3 class="text-3xl md:text-4xl font-bold gradient-text mb-2">30%</h3>
+                        <p class="text-gray-600 text-sm md:text-base">Average Yield Increase</p>
                     </div>
                     <div class="stat-card">
-                        <h3 class="text-4xl font-bold gradient-text mb-2">100+</h3>
-                        <p class="text-gray-600">Happy Farmers</p>
+                        <h3 class="text-3xl md:text-4xl font-bold gradient-text mb-2">5000+</h3>
+                        <p class="text-gray-600 text-sm md:text-base">Happy Farmers</p>
                     </div>
                 </div>
             </div>
@@ -466,50 +525,68 @@
     </section>
 
     <!-- Team Section -->
-    <section id="team" class="py-20 bg-green-50">
-        <div class="container mx-auto px-6">
-            <h2 class="text-4xl font-bold text-center mb-4 section-title">Meet Our Team</h2>
-            <p class="text-xl text-gray-600 text-center max-w-3xl mx-auto mb-16">The passionate developers behind MAISCAN dedicated to revolutionizing agriculture.</p>
+    <section id="team" class="py-16 md:py-20 bg-green-50 mobile-padding">
+        <div class="container mx-auto px-4 md:px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 section-title mobile-center">Meet Our Team</h2>
+            <p class="text-lg md:text-xl text-gray-600 text-center max-w-3xl mx-auto mb-12 md:mb-16 mobile-text-sm">The passionate developers behind MAISCAN dedicated to revolutionizing agriculture.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass-card p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300">
-                    <div class="w-32 h-32 rounded-full mx-auto mb-6 overflow-hidden border-4 border-white shadow-lg">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div class="glass-card p-6 md:p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300">
+                    <div class="w-24 h-24 md:w-32 md:h-32 rounded-full mx-auto mb-4 md:mb-6 overflow-hidden border-4 border-white shadow-lg">
                         <img src="../static/assets/img/team/88.png" alt="John Luis Albufera" class="w-full h-full object-cover">
                     </div>
-                    <h3 class="text-2xl font-semibold mb-2 gradient-text">John Luis Albufera</h3>
-                    <p class="text-gray-600 mb-4">Lead Developer</p>
-                    <p class="text-gray-600 mb-6">Specializes in AI algorithms and machine learning models for agricultural applications.</p>
-                    <div class="flex justify-center space-x-4">
-                        <a href="https://www.facebook.com/itslowes" target="_blank" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
-                            <i class="fab fa-facebook-f"></i>
+                    <h3 class="text-xl md:text-2xl font-semibold mb-2 gradient-text">John Luis Albufera</h3>
+                    <p class="text-gray-600 mb-4 mobile-text-sm">Lead Developer</p>
+                    <p class="text-gray-600 mb-4 md:mb-6 mobile-text-sm">Specializes in AI algorithms and machine learning models for agricultural applications.</p>
+                    <div class="flex justify-center space-x-3 md:space-x-4">
+                        <a href="https://www.facebook.com/itslowes" target="_blank" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f text-sm md:text-base"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
+                            <i class="fab fa-twitter text-sm md:text-base"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
+                            <i class="fab fa-linkedin-in text-sm md:text-base"></i>
                         </a>
                     </div>
                 </div>
                 
-                <div class="glass-card p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300">
-                    <div class="w-32 h-32 rounded-full mx-auto mb-6 overflow-hidden border-4 border-white shadow-lg">
+                <div class="glass-card p-6 md:p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300">
+                    <div class="w-24 h-24 md:w-32 md:h-32 rounded-full mx-auto mb-4 md:mb-6 overflow-hidden border-4 border-white shadow-lg">
                         <img src="../static/assets/img/team/888.png" alt="Chyryle Joy Dairo" class="w-full h-full object-cover">
                     </div>
-                    <h3 class="text-2xl font-semibold mb-2 gradient-text">Chyryle Joy Dairo</h3>
-                    <p class="text-gray-600 mb-4">UI/UX Developer</p>
-                    <p class="text-gray-600 mb-6">Focuses on creating intuitive user interfaces and seamless user experiences.</p>
-                    <div class="flex justify-center space-x-4">
-                        <a href="https://www.facebook.com/saymyname.happi" target="_blank" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
-                            <i class="fab fa-facebook-f"></i>
+                    <h3 class="text-xl md:text-2xl font-semibold mb-2 gradient-text">Chyryle Joy Dairo</h3>
+                    <p class="text-gray-600 mb-4 mobile-text-sm">UI/UX Developer</p>
+                    <p class="text-gray-600 mb-4 md:mb-6 mobile-text-sm">Focuses on creating intuitive user interfaces and seamless user experiences.</p>
+                    <div class="flex justify-center space-x-3 md:space-x-4">
+                        <a href="https://www.facebook.com/saymyname.happi" target="_blank" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f text-sm md:text-base"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
+                            <i class="fab fa-twitter text-sm md:text-base"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
+                            <i class="fab fa-linkedin-in text-sm md:text-base"></i>
                         </a>
                     </div>
                 </div>
                 
-                <div class="glass-card p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300">
-                    <div class="w-32 h-32 rounded-full mx-auto mb-6 overflow-hidden border-4 border-white shadow-lg">
+                <div class="glass-card p-6 md:p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300">
+                    <div class="w-24 h-24 md:w-32 md:h-32 rounded-full mx-auto mb-4 md:mb-6 overflow-hidden border-4 border-white shadow-lg">
                         <img src="../static/assets/img/team/8888.png" alt="Rafaello Kotaro Omolida" class="w-full h-full object-cover">
                     </div>
-                    <h3 class="text-2xl font-semibold mb-2 gradient-text">Rafaello Kotaro Omolida</h3>
-                    <p class="text-gray-600 mb-4">Backend Developer</p>
-                    <p class="text-gray-600 mb-6">Expert in server architecture, database management, and API development.</p>
-                    <div class="flex justify-center space-x-4">
-                        <a href="https://www.facebook.com/Kotarooooo.II" target="_blank" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
-                            <i class="fab fa-facebook-f"></i>
+                    <h3 class="text-xl md:text-2xl font-semibold mb-2 gradient-text">Rafaello Kotaro Omolida</h3>
+                    <p class="text-gray-600 mb-4 mobile-text-sm">Backend Developer</p>
+                    <p class="text-gray-600 mb-4 md:mb-6 mobile-text-sm">Expert in server architecture, database management, and API development.</p>
+                    <div class="flex justify-center space-x-3 md:space-x-4">
+                        <a href="https://www.facebook.com/Kotarooooo.II" target="_blank" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f text-sm md:text-base"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
+                            <i class="fab fa-twitter text-sm md:text-base"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-colors">
+                            <i class="fab fa-linkedin-in text-sm md:text-base"></i>
                         </a>
                     </div>
                 </div>
@@ -518,69 +595,69 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-6">
-            <h2 class="text-4xl font-bold text-center mb-4 section-title">What Farmers Say</h2>
-            <p class="text-xl text-gray-600 text-center max-w-3xl mx-auto mb-16">Hear from farmers who have transformed their corn cultivation with MAISCAN.</p>
+    <section class="py-16 md:py-20 bg-white mobile-padding">
+        <div class="container mx-auto px-4 md:px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 section-title mobile-center">What Farmers Say</h2>
+            <p class="text-lg md:text-xl text-gray-600 text-center max-w-3xl mx-auto mb-12 md:mb-16 mobile-text-sm">Hear from farmers who have transformed their corn cultivation with MAISCAN.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="glass-card p-6 rounded-2xl testimonial-card">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <div class="glass-card p-5 md:p-6 rounded-2xl testimonial-card">
                     <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-4">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-3 md:mr-4">
                             <i class="fas fa-user"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Miguel Santos</h4>
-                            <p class="text-sm text-gray-600">Corn Farmer, Isabela</p>
+                            <h4 class="font-semibold text-gray-800 text-sm md:text-base">Miguel Santos</h4>
+                            <p class="text-xs md:text-sm text-gray-600">Corn Farmer, Isabela</p>
                         </div>
                     </div>
-                    <p class="text-gray-600 italic">"MAISCAN helped me detect a fungal infection early, saving my entire crop. The detailed report guided me on exactly what treatment to apply."</p>
-                    <div class="flex text-yellow-400 mt-4">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
+                    <p class="text-gray-600 italic text-sm md:text-base">"MAISCAN helped me detect a fungal infection early, saving my entire crop. The detailed report guided me on exactly what treatment to apply."</p>
+                    <div class="flex text-yellow-400 mt-3 md:mt-4">
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
                     </div>
                 </div>
                 
-                <div class="glass-card p-6 rounded-2xl testimonial-card">
+                <div class="glass-card p-5 md:p-6 rounded-2xl testimonial-card">
                     <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-4">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-3 md:mr-4">
                             <i class="fas fa-user"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Elena Rodriguez</h4>
-                            <p class="text-sm text-gray-600">Agricultural Cooperative Manager</p>
+                            <h4 class="font-semibold text-gray-800 text-sm md:text-base">Elena Rodriguez</h4>
+                            <p class="text-xs md:text-sm text-gray-600">Agricultural Cooperative Manager</p>
                         </div>
                     </div>
-                    <p class="text-gray-600 italic">"Our cooperative has seen a 25% increase in yield since implementing MAISCAN. The automatic sorting feature has improved our product quality significantly."</p>
-                    <div class="flex text-yellow-400 mt-4">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
+                    <p class="text-gray-600 italic text-sm md:text-base">"Our cooperative has seen a 25% increase in yield since implementing MAISCAN. The automatic sorting feature has improved our product quality significantly."</p>
+                    <div class="flex text-yellow-400 mt-3 md:mt-4">
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
                     </div>
                 </div>
                 
-                <div class="glass-card p-6 rounded-2xl testimonial-card">
+                <div class="glass-card p-5 md:p-6 rounded-2xl testimonial-card">
                     <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-4">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-3 md:mr-4">
                             <i class="fas fa-user"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Carlos Lim</h4>
-                            <p class="text-sm text-gray-600">Commercial Farmer, Mindanao</p>
+                            <h4 class="font-semibold text-gray-800 text-sm md:text-base">Carlos Lim</h4>
+                            <p class="text-xs md:text-sm text-gray-600">Commercial Farmer, Mindanao</p>
                         </div>
                     </div>
-                    <p class="text-gray-600 italic">"The prevention strategies recommended by MAISCAN have reduced my pesticide costs by 30% while maintaining healthy crops. Highly recommended!"</p>
-                    <div class="flex text-yellow-400 mt-4">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
+                    <p class="text-gray-600 italic text-sm md:text-base">"The prevention strategies recommended by MAISCAN have reduced my pesticide costs by 30% while maintaining healthy crops. Highly recommended!"</p>
+                    <div class="flex text-yellow-400 mt-3 md:mt-4">
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
+                        <i class="fas fa-star text-sm md:text-base"></i>
                     </div>
                 </div>
             </div>
@@ -588,85 +665,88 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="py-20 gradient-bg">
-        <div class="container mx-auto px-6 text-center">
-            <h2 class="text-4xl font-bold text-white mb-6">Ready to Transform Your Corn Farming?</h2>
-            <p class="text-xl text-white mb-10 max-w-2xl mx-auto">Join thousands of farmers who are already using MAISCAN to increase yields and reduce losses.</p>
-            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <a href="{{ url_for('register') }}" class="btn-secondary px-8 py-3 rounded-full font-semibold text-lg">
-                    <i></i>Sign up for Free
+    <section class="py-16 md:py-20 gradient-bg mobile-padding">
+        <div class="container mx-auto px-4 md:px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6 mobile-center">Ready to Transform Your Corn Farming?</h2>
+            <p class="text-lg md:text-xl text-white mb-8 md:mb-10 max-w-2xl mx-auto mobile-text-sm">Join thousands of farmers who are already using MAISCAN to increase yields and reduce losses.</p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 mobile-stack">
+                <a href="{{ url_for('register') }}" class="btn-secondary px-6 py-3 md:px-8 md:py-3 rounded-full font-semibold text-lg text-center mobile-full-width">
+                    <i class="fas fa-user-plus mr-2"></i>Create Account
+                </a>
+                <a href="{{ url_for('login') }}" class="bg-white text-green-600 px-6 py-3 md:px-8 md:py-3 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors text-center mobile-full-width">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Sign In
                 </a>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer class="bg-gray-900 text-white py-12 mobile-padding">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                 <div>
                     <div class="flex items-center mb-4">
-                        <img src="../static/assets/img/maiscan.png" alt="MAISCAN Logo" class="h-8 w-8 mr-2">
-                        <span class="text-xl font-bold">MAISCAN</span>
+                        <img src="../static/assets/img/maiscan.png" alt="MAISCAN Logo" class="h-6 w-6 md:h-8 md:w-8 mr-2">
+                        <span class="text-lg md:text-xl font-bold">MAISCAN</span>
                     </div>
-                    <p class="text-gray-400 mb-4">Revolutionizing corn farming through AI-powered disease detection and prevention.</p>
-                    <div class="flex space-x-4">
+                    <p class="text-gray-400 mb-4 text-sm md:text-base">Revolutionizing corn farming through AI-powered disease detection and prevention.</p>
+                    <div class="flex space-x-3 md:space-x-4">
                         <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fab fa-facebook-f"></i>
+                            <i class="fab fa-facebook-f text-sm md:text-base"></i>
                         </a>
                         <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fab fa-twitter"></i>
+                            <i class="fab fa-twitter text-sm md:text-base"></i>
                         </a>
                         <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fab fa-instagram"></i>
+                            <i class="fab fa-instagram text-sm md:text-base"></i>
                         </a>
                         <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fab fa-linkedin-in"></i>
+                            <i class="fab fa-linkedin-in text-sm md:text-base"></i>
                         </a>
                     </div>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4">Quick Links</h3>
                     <ul class="space-y-2">
-                        <li><a href="#home" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
-                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">Features</a></li>
-                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors">About</a></li>
-                        <li><a href="#services" class="text-gray-400 hover:text-white transition-colors">Services</a></li>
-                        <li><a href="#team" class="text-gray-400 hover:text-white transition-colors">Our Team</a></li>
+                        <li><a href="#home" class="text-gray-400 hover:text-white transition-colors text-sm md:text-base">Home</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors text-sm md:text-base">Features</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors text-sm md:text-base">About</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-white transition-colors text-sm md:text-base">Services</a></li>
+                        <li><a href="#team" class="text-gray-400 hover:text-white transition-colors text-sm md:text-base">Our Team</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Services</h3>
+                    <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4">Services</h3>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Disease Detection</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Prevention Strategies</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Automatic Sorting</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Detailed Reports</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm md:text-base">Disease Detection</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm md:text-base">Prevention Strategies</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm md:text-base">Automatic Sorting</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm md:text-base">Detailed Reports</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4">Contact Us</h3>
                     <ul class="space-y-2">
                         <li class="flex items-center">
-                            <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
-                            <span class="text-gray-400">Pinagsabangan 1, Philippines</span>
+                            <i class="fas fa-map-marker-alt mr-2 text-gray-400 text-sm md:text-base"></i>
+                            <span class="text-gray-400 text-sm md:text-base">Pinagsabangan 1, Philippines</span>
                         </li>
                         <li class="flex items-center">
-                            <i class="fas fa-phone mr-2 text-gray-400"></i>
-                            <span class="text-gray-400">+63 912 345 6789</span>
+                            <i class="fas fa-phone mr-2 text-gray-400 text-sm md:text-base"></i>
+                            <span class="text-gray-400 text-sm md:text-base">+63 912 345 6789</span>
                         </li>
                         <li class="flex items-center">
-                            <i class="fas fa-envelope mr-2 text-gray-400"></i>
-                            <span class="text-gray-400">info@maiscan.com</span>
+                            <i class="fas fa-envelope mr-2 text-gray-400 text-sm md:text-base"></i>
+                            <span class="text-gray-400 text-sm md:text-base">info@maiscan.com</span>
                         </li>
                     </ul>
                 </div>
             </div>
             
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm md:text-base">
                 <p>&copy; 2023 MAISCAN. All rights reserved. | Developed by PINAGSABANGAN 1 VEGETABLE GROWERS ASSOCIATION</p>
             </div>
         </div>
@@ -677,6 +757,16 @@
         document.getElementById('mobile-menu-button').addEventListener('click', function() {
             const menu = document.getElementById('mobile-menu');
             menu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('mobile-menu');
+            const button = document.getElementById('mobile-menu-button');
+            
+            if (!menu.contains(event.target) && !button.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
         });
 
         // Smooth scrolling for navigation links
@@ -699,6 +789,12 @@
                     mobileMenu.classList.add('hidden');
                 }
             });
+        });
+
+        // Add padding to body to account for fixed navbar on mobile
+        document.addEventListener('DOMContentLoaded', function() {
+            const navHeight = document.querySelector('nav').offsetHeight;
+            document.body.style.paddingTop = navHeight + 'px';
         });
     </script>
 </body>
