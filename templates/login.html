@@ -18,14 +18,101 @@
       rel="stylesheet"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <style>
+      :root {
+        --primary-green: #2E7D32;
+        --light-green: #4CAF50;
+        --dark-green: #1B5E20;
+        --primary-yellow: #FFD600;
+        --light-yellow: #FFEE58;
+        --dark-yellow: #F9A825;
+      }
+      
+      body {
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, #f5fdf4 0%, #e8f5e9 100%);
+        min-height: 100vh;
+      }
+      
+      .glass-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(46, 125, 50, 0.1);
+      }
+      
+      .gradient-bg {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+      }
+      
+      .gradient-text {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .gradient-text-yellow {
+        background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--dark-yellow) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+        color: white;
+        transition: all 0.3s ease;
+      }
+      
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(46, 125, 50, 0.3);
+      }
+      
+      .btn-secondary {
+        background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--light-yellow) 100%);
+        color: var(--dark-green);
+        transition: all 0.3s ease;
+      }
+      
+      .btn-secondary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(255, 214, 0, 0.3);
+      }
+      
+      .input-field {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(76, 175, 80, 0.3);
+        transition: all 0.3s ease;
+      }
+      
+      .input-field:focus {
+        background: rgba(255, 255, 255, 0.9);
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+      }
+      
+      .floating {
+        animation: floating 3s ease-in-out infinite;
+      }
+      
+      @keyframes floating {
+        0% { transform: translate(0, 0px); }
+        50% { transform: translate(0, 15px); }
+        100% { transform: translate(0, -0px); }
+      }
+      
       .flash-message {
         animation: fadeOut 5s forwards;
-        animation-delay: 2s;
+        animation-delay: 3s;
       }
+      
       @keyframes fadeOut {
         from {
           opacity: 1;
@@ -35,99 +122,248 @@
           display: none;
         }
       }
+      
+      /* Mobile-specific styles */
+      @media (max-width: 768px) {
+        .mobile-padding {
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+        
+        .mobile-stack {
+          flex-direction: column;
+        }
+        
+        .mobile-center {
+          text-align: center;
+        }
+        
+        .mobile-full-width {
+          width: 100%;
+        }
+      }
     </style>
   </head>
-  <body class="bg-green-50 font-[Montserrat]">
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %} {% for category, message in messages %}
-    <div class="fixed top-4 right-4 z-50 flash-message">
-      <div
-        class="bg-{{ 'green' if category == 'success' else 'red' if category == 'danger' else 'yellow' }}-500 text-white px-6 py-3 rounded-lg shadow-lg"
-      >
-        {{ message }}
-      </div>
+  <body class="font-[Montserrat]">
+    <!-- Background elements -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+      <div class="absolute -top-20 -right-20 md:-top-40 md:-right-40 w-40 h-40 md:w-80 md:h-80 rounded-full gradient-bg opacity-20"></div>
+      <div class="absolute -bottom-20 -left-20 md:-bottom-40 md:-left-40 w-40 h-40 md:w-80 md:h-80 rounded-full bg-yellow-400 opacity-20"></div>
+      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-96 md:h-96 rounded-full bg-green-100 opacity-30"></div>
     </div>
-    {% endfor %} {% endif %} {% endwith %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} 
+      {% if messages %} 
+        {% for category, message in messages %}
+          <div class="fixed top-4 right-4 z-50 flash-message max-w-xs md:max-w-md">
+            <div class="glass-card px-6 py-3 rounded-lg shadow-lg flex items-center">
+              <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'exclamation-circle' }} text-{{ 'green' if category == 'success' else 'yellow' if category == 'warning' else 'red' }}-500 mr-2"></i>
+              <span class="text-gray-800">{{ message }}</span>
+            </div>
+          </div>
+        {% endfor %} 
+      {% endif %} 
+    {% endwith %}
 
     <!-- Login Section -->
-    <section class="min-h-screen flex flex-col justify-center items-center p-8">
-      <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <div class="flex justify-center mb-4">
-          <img
-            src="{{ url_for('static', filename='assets/img/maiscan.png') }}"
-            alt="Maiscan Logo"
-            class="h-20 w-auto"
-          />
+    <section class="min-h-screen flex flex-col justify-center items-center p-4 md:p-8 mobile-padding relative z-10">
+      <div class="glass-card p-6 md:p-10 rounded-2xl shadow-xl max-w-md w-full">
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+          <div class="flex justify-center mb-4">
+            <div class="relative">
+              <img
+                src="{{ url_for('static', filename='assets/img/maiscan.png') }}"
+                alt="Maiscan Logo"
+                class="h-20 w-auto floating"
+              />
+              <div class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                <i class="fas fa-leaf text-white text-xs"></i>
+              </div>
+            </div>
+          </div>
+          <h1 class="text-3xl md:text-4xl font-bold gradient-text mb-2">Welcome Back</h1>
+          <p class="text-gray-600">Sign in to your MAISCAN account</p>
         </div>
-        <h1 class="text-4xl font-bold text-green-900 mb-6 text-center">
-          Login
-        </h1>
+
+        <!-- Login Form -->
         <form method="POST" class="space-y-6">
           <div>
             <label
               for="email"
-              class="block text-green-700 text-sm font-semibold mb-2"
-              >Email</label
+              class="block text-gray-700 text-sm font-semibold mb-2"
+              >Email Address</label
             >
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-              class="w-full px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+            <div class="relative">
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="Enter your email"
+                class="w-full px-4 py-3 pl-10 input-field rounded-lg focus:outline-none transition-all duration-300"
+              />
+              <div class="absolute left-3 top-3.5 text-green-600">
+                <i class="fas fa-envelope"></i>
+              </div>
+            </div>
           </div>
+          
           <div>
             <label
               for="password"
-              class="block text-green-700 text-sm font-semibold mb-2"
+              class="block text-gray-700 text-sm font-semibold mb-2"
               >Password</label
             >
-            <input
-              type="password"
-              id="password"
-              name="password"
-              required
-              class="w-full px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+            <div class="relative">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                placeholder="Enter your password"
+                class="w-full px-4 py-3 pl-10 pr-10 input-field rounded-lg focus:outline-none transition-all duration-300"
+              />
+              <div class="absolute left-3 top-3.5 text-green-600">
+                <i class="fas fa-lock"></i>
+              </div>
+              <button type="button" class="absolute right-3 top-3.5 text-gray-400 hover:text-green-600 transition-colors" id="togglePassword">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
           </div>
-          <div class="mt-4 text-right">
-            <a
-              href="{{ url_for('forgot_password') }}"
-              class="text-sm text-yellow-500 hover:text-yellow-600"
-            >
-              Forgot Password?
-            </a>
+          
+          <div class="flex justify-between items-center">
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                name="remember"
+                class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+              <label for="remember" class="ml-2 block text-sm text-gray-700">
+                Remember me
+              </label>
+            </div>
+            <div>
+              <a
+                href="{{ url_for('forgot_password') }}"
+                class="text-sm gradient-text-yellow font-semibold hover:underline"
+              >
+                Forgot Password?
+              </a>
+            </div>
           </div>
 
           <button
             type="submit"
-            class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-300"
+            class="w-full btn-primary px-6 py-3 rounded-lg font-semibold flex items-center justify-center"
           >
-            <i class="fas fa-sign-in-alt mr-2"></i>Login
+            <i class="fas fa-sign-in-alt mr-2"></i>Sign In
           </button>
         </form>
-        <div class="mt-6 text-center">
-          <p class="text-green-700">
+
+        <!-- Divider -->
+        <div class="my-6 flex items-center">
+          <div class="flex-grow border-t border-gray-300"></div>
+          <span class="mx-4 text-gray-500 text-sm"></span>
+          <div class="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        <!-- Additional Links -->
+        <div class="text-center space-y-4">
+          <p class="text-gray-600">
             Don't have an account?
             <a
               href="{{ url_for('register') }}"
-              class="text-yellow-500 hover:text-yellow-600"
-              >Register</a
+              class="gradient-text-yellow font-semibold hover:underline"
+              >Create Account</a
             >
           </p>
-        </div>
-        <div class="mt-6 text-center">
-          <p class="text-green-700">
+          <p class="text-gray-600">
             <a
               href="{{ url_for('home') }}"
-              class="text-yellow-500 hover:text-yellow-600"
-              >Back to Home</a
+              class="gradient-text font-semibold hover:underline flex items-center justify-center"
             >
+              <i class="fas fa-arrow-left mr-2"></i>Back to Home
+            </a>
           </p>
         </div>
       </div>
+
+      <!-- Features Preview -->
+      <div class="mt-8 md:mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-4xl">
+        <div class="glass-card p-4 rounded-xl text-center">
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mx-auto mb-3">
+            <i class="fas fa-bug"></i>
+          </div>
+          <h3 class="font-semibold text-gray-800 mb-1">Disease Detection</h3>
+          <p class="text-gray-600 text-sm">AI-powered corn disease identification</p>
+        </div>
+        
+        <div class="glass-card p-4 rounded-xl text-center">
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mx-auto mb-3">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3 class="font-semibold text-gray-800 mb-1">Real-Time Analytics</h3>
+          <p class="text-gray-600 text-sm">Instant insights for your crops</p>
+        </div>
+        
+        <div class="glass-card p-4 rounded-xl text-center">
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mx-auto mb-3">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h3 class="font-semibold text-gray-800 mb-1">Mobile Friendly</h3>
+          <p class="text-gray-600 text-sm">Access from any device</p>
+        </div>
+      </div>
     </section>
+
+    <script>
+      // Toggle password visibility
+      document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        } else {
+          passwordInput.type = 'password';
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        }
+      });
+
+      // Add focus effects to form inputs
+      document.querySelectorAll('.input-field').forEach(input => {
+        input.addEventListener('focus', function() {
+          this.parentElement.classList.add('ring-2', 'ring-green-200', 'rounded-lg');
+        });
+        
+        input.addEventListener('blur', function() {
+          this.parentElement.classList.remove('ring-2', 'ring-green-200', 'rounded-lg');
+        });
+      });
+
+      // Form validation
+      document.querySelector('form').addEventListener('submit', function(e) {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        if (!email || !password) {
+          e.preventDefault();
+          alert('Please fill in all required fields');
+          return;
+        }
+        
+        // Add loading state to button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing In...';
+        submitBtn.disabled = true;
+      });
+    </script>
   </body>
 </html>
