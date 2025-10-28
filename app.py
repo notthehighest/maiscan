@@ -171,7 +171,7 @@ def load_ml_model():
         MODEL_URL = f"https://drive.google.com/uc?id={FILE_ID}"
 
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final.h5")
+        model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final_finetuned.keras")
 
         # Debug: Check current directory and files
         logger.debug(f"Current directory: {BASE_DIR}")
@@ -249,7 +249,7 @@ def home():
 @app.route("/debug")
 def debug():
     model_status = "Loaded" if model is not None else "Not Loaded"
-    model_path_debug = os.path.join(os.path.dirname(os.path.abspath(__file__)), "maiscan_disease_model_final.h5")
+    model_path_debug = os.path.join(os.path.dirname(os.path.abspath(__file__)), "maiscan_disease_model_final_finetuned.keras")
     model_exists = os.path.exists(model_path_debug)
     file_size = os.path.getsize(model_path_debug) if model_exists else 0
     
