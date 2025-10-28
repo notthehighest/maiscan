@@ -597,4 +597,4 @@ if __name__ == "__main__":
     print(f"📁 Files in directory: {os.listdir('.')}")
     print(f"✅ Model status: {'Loaded' if model is not None else 'Not loaded'}")
     
-    app.run(debug=False, host="0.0.0.0", port=port, threaded=True)
+    app.run(debug=True, host="0.0.0.0", port=port, threaded=True)
