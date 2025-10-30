@@ -13,6 +13,8 @@ from tensorflow.keras.utils import load_img, img_to_array
 from dotenv import load_dotenv
 import gdown
 import logging
+import tempfile
+import requests
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -158,7 +160,7 @@ def load_user(user_id):
 model = None
 
 def load_ml_model():
-    """Load ML model with compatibility for TensorFlow 2.16.1 and Keras 3.2.0"""
+    """Load ML model directly from Google Drive cloud storage"""
     global model
     
     try:
@@ -166,77 +168,117 @@ def load_ml_model():
         import tensorflow as tf
         tf.keras.backend.clear_session()
         
-        # Google Drive file ID
-        FILE_ID = os.getenv("MODEL_FILE_ID", "1b-n8usXAIBmsBV8TqPz4nkIXqqcBM-fP")
+        # Google Drive file ID from your provided link
+        # https://drive.google.com/file/d/1MMwvzqgThRf5jwUeCBPQmzHnG9mv9_ec/view?usp=sharing
+        FILE_ID = "1MMwvzqgThRf5jwUeCBPQmzHnG9mv9_ec"
         MODEL_URL = f"https://drive.google.com/uc?id={FILE_ID}"
 
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        model_path = os.path.join(BASE_DIR, "maiscan_disease_model_final_finetuned.keras")
+        print("🔄 Loading model from Google Drive cloud storage...")
+        
+        # Create a temporary file to store the model
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.keras') as temp_model_file:
+            temp_model_path = temp_model_file.name
 
-        # Debug: Check current directory and files
-        logger.debug(f"Current directory: {BASE_DIR}")
-        logger.debug(f"Files in directory: {os.listdir(BASE_DIR)}")
-        logger.debug(f"Model path: {model_path}")
-
-        # Download model if it doesn't already exist
-        if not os.path.exists(model_path):
-            print("🔄 Downloading model from Google Drive...")
-            try:
-                gdown.download(MODEL_URL, model_path, quiet=False)
-                print("✅ Model downloaded successfully")
-                
-                # Verify the file was downloaded
-                if os.path.exists(model_path):
-                    file_size = os.path.getsize(model_path)
-                    print(f"✅ Model file size: {file_size} bytes")
-                else:
-                    print("❌ Model file not found after download")
-                    return
-                    
-            except Exception as download_error:
-                print(f"❌ Error downloading model: {download_error}")
-                return
-
-        # Verify model file exists and has content
-        if os.path.exists(model_path):
-            file_size = os.path.getsize(model_path)
-            print(f"📁 Model file exists, size: {file_size} bytes")
-            
-            if file_size == 0:
-                print("❌ Model file is empty")
-                os.remove(model_path)  # Remove empty file
-                return
-        else:
-            print("❌ Model file does not exist")
-            return
-
-        # Load the model with improved error handling
-        print("🔄 Loading model...")
         try:
-            # For TensorFlow 2.16.1 + Keras 3.2.0 compatibility
-            model = load_model(model_path, compile=False)
-            print("✅ Model loaded successfully")
+            # Download model using gdown
+            gdown.download(MODEL_URL, temp_model_path, quiet=False)
+            
+            # Verify the file was downloaded
+            if os.path.exists(temp_model_path):
+                file_size = os.path.getsize(temp_model_path)
+                print(f"✅ Model downloaded successfully, size: {file_size} bytes")
+                
+                if file_size == 0:
+                    print("❌ Model file is empty")
+                    os.remove(temp_model_path)
+                    return
+            else:
+                print("❌ Model file not found after download")
+                return
+
+            # Load the model from temporary file
+            print("🔄 Loading model into memory...")
+            model = load_model(temp_model_path, compile=False)
+            print("✅ Model loaded successfully from cloud storage")
             
             # Test the model with a simple prediction
             test_input = np.random.random((1, 224, 224, 3)).astype(np.float32)
             test_prediction = model.predict(test_input, verbose=0)
             print(f"✅ Model test prediction shape: {test_prediction.shape}")
             
-        except Exception as load_error:
-            print(f"❌ Error loading model: {load_error}")
-            model = None
-            # Try to clean up corrupted file
-            if os.path.exists(model_path):
-                os.remove(model_path)
-                print("🗑️ Removed potentially corrupted model file")
+        finally:
+            # Clean up temporary file
+            if os.path.exists(temp_model_path):
+                os.remove(temp_model_path)
+                print("🗑️ Temporary model file cleaned up")
 
     except Exception as e:
-        print(f"❌ Unexpected error in model loading: {e}")
+        print(f"❌ Error loading model from cloud: {e}")
         model = None
 
+# Alternative method using direct download
+def load_ml_model_alternative():
+    """Alternative method to load model using direct download"""
+    global model
+    
+    try:
+        import tensorflow as tf
+        tf.keras.backend.clear_session()
+        
+        # Direct download URL (you might need to get this from the shareable link)
+        FILE_ID = "1MMwvzqgThRf5jwUeCBPQmzHnG9mv9_ec"
+        MODEL_URL = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
+        
+        print("🔄 Attempting alternative model download...")
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.keras') as temp_file:
+            temp_path = temp_file.name
+        
+        try:
+            # Download using requests with session to handle large files
+            session = requests.Session()
+            response = session.get(MODEL_URL, stream=True)
+            
+            # Handle Google Drive virus scan warning for large files
+            if 'confirm=' in response.url:
+                import re
+                confirm_match = re.search(r'confirm=([^&]+)', response.url)
+                if confirm_match:
+                    confirm_token = confirm_match.group(1)
+                    MODEL_URL = f"https://drive.google.com/uc?export=download&id={FILE_ID}&confirm={confirm_token}"
+                    response = session.get(MODEL_URL, stream=True)
+            
+            # Download the file
+            with open(temp_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=32768):
+                    if chunk:
+                        f.write(chunk)
+            
+            if os.path.exists(temp_path):
+                file_size = os.path.getsize(temp_path)
+                print(f"✅ Model downloaded via alternative method, size: {file_size} bytes")
+                
+                if file_size > 0:
+                    model = load_model(temp_path, compile=False)
+                    print("✅ Model loaded successfully via alternative method")
+                else:
+                    print("❌ Downloaded file is empty")
+            
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                
+    except Exception as e:
+        print(f"❌ Alternative model loading failed: {e}")
+
 # Load the model when the app starts
-print("🚀 Starting ML model loading...")
+print("🚀 Starting ML model loading from Google Drive...")
 load_ml_model()
+
+# If primary method fails, try alternative
+if model is None:
+    print("🔄 Primary method failed, trying alternative...")
+    load_ml_model_alternative()
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -249,18 +291,13 @@ def home():
 @app.route("/debug")
 def debug():
     model_status = "Loaded" if model is not None else "Not Loaded"
-    model_path_debug = os.path.join(os.path.dirname(os.path.abspath(__file__)), "maiscan_disease_model_final_finetuned.keras")
-    model_exists = os.path.exists(model_path_debug)
-    file_size = os.path.getsize(model_path_debug) if model_exists else 0
-    
     current_dir = os.path.dirname(os.path.abspath(__file__))
     files_in_dir = os.listdir(current_dir)
     
     return jsonify({
         "model_status": model_status,
-        "model_path": model_path_debug,
-        "model_exists": model_exists,
-        "model_file_size": file_size,
+        "model_source": "Google Drive Cloud",
+        "model_file_id": "1MMwvzqgThRf5jwUeCBPQmzHnG9mv9_ec",
         "current_directory": current_dir,
         "files_in_dir": files_in_dir,
         "upload_folder_exists": os.path.exists(app.config["UPLOAD_FOLDER"])
@@ -584,6 +621,7 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'model_loaded': model is not None,
+        'model_source': 'Google Drive Cloud',
         'timestamp': datetime.datetime.utcnow().isoformat()
     })
 
@@ -596,5 +634,6 @@ if __name__ == "__main__":
     print(f"📁 Current directory: {os.getcwd()}")
     print(f"📁 Files in directory: {os.listdir('.')}")
     print(f"✅ Model status: {'Loaded' if model is not None else 'Not loaded'}")
+    print(f"🌐 Model source: Google Drive Cloud")
     
     app.run(debug=True, host="0.0.0.0", port=port, threaded=True)
