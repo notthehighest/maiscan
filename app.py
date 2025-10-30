@@ -395,7 +395,7 @@ def forgot_password():
         
         try:
             # Send password reset email
-            pb_auth.send_password reset_email(email)
+            pb_auth.send_password_reset_email(email)
             flash("Password reset email sent! Check your inbox.", "success")
             return redirect(url_for("login"))
             
