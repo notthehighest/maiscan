@@ -3,39 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAISCAN - Unknown Class</title>
+    <title>Unknown Detection - MAISCAN</title>
     <link rel="icon" type="image/x-icon" href="../static/assets/img/maiscan.png" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-green: #2E7D32;
+            --light-green: #4CAF50;
+            --dark-green: #1B5E20;
+            --primary-yellow: #FFD600;
+            --light-yellow: #FFEE58;
+            --warning-orange: #FF9800;
+            --dark-orange: #F57C00;
+        }
+        
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c8e6c9 100%);
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #f5fdf4 0%, #e8f5e9 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        .result-container {
-            background: rgba(255, 255, 255, 0.98);
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e6ee9c;
-            margin-top: 2rem;
-            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(46, 125, 50, 0.1);
         }
         
-        .unknown-header {
-            background: linear-gradient(135deg, #ff9800, #ffc107);
-            color: #2e7d32;
-            padding: 2rem;
-            border-radius: 20px 20px 0 0;
-            text-align: center;
-            border-bottom: 3px solid #c8e6c9;
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+        }
+        
+        .gradient-bg-warning {
+            background: linear-gradient(135deg, var(--warning-orange) 0%, var(--dark-orange) 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-text-warning {
+            background: linear-gradient(135deg, var(--warning-orange) 0%, var(--dark-orange) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(46, 125, 50, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-orange) 0%, var(--dark-orange) 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 152, 0, 0.3);
         }
         
         .unknown-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            color: #ff6b35;
             animation: pulse 2s ease-in-out infinite alternate;
         }
         
@@ -48,327 +91,395 @@
             max-width: 100%;
             max-height: 300px;
             object-fit: contain;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border: 2px solid #e6ee9c;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.5);
         }
         
-        .confidence-badge {
-            font-size: 1.2rem;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            background-color: #ff9800;
-            color: white;
+        .confidence-meter {
+            height: 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            overflow: hidden;
+            margin: 10px 0;
         }
         
-        .guidelines {
-            background: #fff3e0;
-            border-radius: 10px;
-            border-left: 5px solid #ff9800;
+        .confidence-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--warning-orange), var(--dark-orange));
+            transition: width 1s ease-in-out;
         }
         
-        .btn-retry {
-            background: linear-gradient(135deg, #43a047, #2e7d32);
-            border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 25px;
-            color: white;
-            font-weight: 600;
+        .disease-card {
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
         
-        .btn-retry:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.15);
-            color: white;
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+        .disease-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
         
-        .alert-warning {
-            background-color: #fff8e1;
-            border-color: #ffcc02;
-            color: #e65100;
+        .tip-card {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
-        .text-warning {
-            color: #ff9800 !important;
+        .tip-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.95);
         }
         
-        .text-success {
-            color: #2e7d32 !important;
+        .floating {
+            animation: floating 3s ease-in-out infinite;
         }
         
-        .text-primary {
-            color: #1976d2 !important;
+        @keyframes floating {
+            0% { transform: translate(0, 0px); }
+            50% { transform: translate(0, 15px); }
+            100% { transform: translate(0, -0px); }
         }
         
-        .border {
-            border-color: #e6ee9c !important;
+        .progress-ring {
+            transform: rotate(-90deg);
         }
         
-        .btn-outline-secondary {
-            border-color: #9e9e9e;
-            color: #9e9e9e;
+        .progress-ring-circle {
+            transition: stroke-dashoffset 1s ease-in-out;
         }
         
-        .btn-outline-secondary:hover {
-            background-color: #9e9e9e;
-            color: white;
-        }
-
-        .known-diseases {
-            background: #e8f5e9;
-            border-radius: 10px;
-            border: 1px solid #c8e6c9;
-        }
-
-        .disease-item {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem;
-            margin: 0.25rem 0;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .disease-icon {
-            width: 30px;
-            text-align: center;
-            margin-right: 10px;
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .mobile-padding {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .mobile-stack {
+                flex-direction: column;
+            }
+            
+            .mobile-center {
+                text-align: center;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="result-container">
-                    <!-- Header -->
-                    <div class="unknown-header">
-                        <i class="fas fa-question-circle unknown-icon"></i>
-                        <h1 class="mb-3">Unknown Class Detected</h1>
-                        <p class="lead mb-0">{{ pred_output }}</p>
+<body class="font-[Montserrat]">
+    <!-- Background elements -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div class="absolute -top-20 -right-20 md:-top-40 md:-right-40 w-40 h-40 md:w-80 md:h-80 rounded-full gradient-bg-warning opacity-20"></div>
+        <div class="absolute -bottom-20 -left-20 md:-bottom-40 md:-left-40 w-40 h-40 md:w-80 md:h-80 rounded-full bg-yellow-400 opacity-20"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-96 md:h-96 rounded-full bg-green-100 opacity-30"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 py-4 bg-white bg-opacity-90 backdrop-blur-sm shadow-sm">
+        <div class="container mx-auto px-4 md:px-6 flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="{{ url_for('static', filename='assets/img/maiscan.png') }}" alt="MAISCAN Logo" class="h-8 w-8 md:h-10 md:w-10 mr-2 md:mr-3">
+                <span class="text-xl md:text-2xl font-bold gradient-text">MAISCAN</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <a href="{{ url_for('maiscan') }}" class="text-gray-700 hover:text-green-600 font-medium transition-colors">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="min-h-screen py-8 mobile-padding pt-24 relative z-10">
+        <div class="container mx-auto px-4">
+            <div class="glass-card p-6 md:p-8 rounded-2xl shadow-xl max-w-6xl mx-auto">
+                <!-- Header Section -->
+                <div class="text-center mb-8">
+                    <div class="relative inline-block mb-4">
+                        <div class="w-24 h-24 md:w-32 md:h-32 rounded-full gradient-bg-warning flex items-center justify-center text-white floating">
+                            <i class="fas fa-question-circle text-4xl md:text-5xl unknown-icon"></i>
+                        </div>
+                        <div class="absolute -top-2 -right-2 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white flex items-center justify-center shadow-lg">
+                            <i class="fas fa-exclamation text-warning-orange text-sm md:text-base"></i>
+                        </div>
                     </div>
-                    
-                    <!-- Content -->
-                    <div class="p-4">
-                        <div class="row">
-                            <div class="col-md-5">
-                                <h4 class="mb-3">
-                                    <i class="fas fa-image text-warning me-2"></i>
-                                    Uploaded Image
-                                </h4>
-                                <div class="text-center mb-3">
-                                    <img src="{{ user_image }}" alt="Uploaded Image" class="image-preview">
-                                </div>
-                                {% if confidence %}
-                                <div class="text-center">
-                                    <span class="badge confidence-badge">
-                                        Confidence: {{ "%.1f"|format(confidence * 100) }}%
-                                    </span>
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-7">
-                                <div class="alert alert-warning mb-4" role="alert">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    <strong>What does this mean?</strong><br>
-                                    The AI model couldn't confidently classify your image into any of the known corn disease or pest categories. 
-                                    This could be due to several reasons listed below.
-                                </div>
+                    <h1 class="text-3xl md:text-4xl font-bold gradient-text-warning mb-3">Unknown Detection</h1>
+                    <p class="text-xl text-gray-600 max-w-2xl mx-auto">{{ pred_output }}</p>
+                </div>
 
-                                <div class="guidelines p-3 mb-4">
-                                    <h5 class="text-warning mb-3">
-                                        <i class="fas fa-lightbulb me-2"></i>
-                                        Possible Reasons
-                                    </h5>
-                                    <ul class="list-unstyled">
-                                        <li class="mb-2">
-                                            <i class="fas fa-times-circle text-danger me-2"></i>
-                                            Image is not a corn/maize leaf
-                                        </li>
-                                        <li class="mb-2">
-                                            <i class="fas fa-times-circle text-danger me-2"></i>
-                                            Poor image quality or lighting
-                                        </li>
-                                        <li class="mb-2">
-                                            <i class="fas fa-times-circle text-danger me-2"></i>
-                                            Disease/pest not in our trained database
-                                        </li>
-                                        <li class="mb-2">
-                                            <i class="fas fa-times-circle text-danger me-2"></i>
-                                            Multiple diseases present simultaneously
-                                        </li>
-                                        <li class="mb-2">
-                                            <i class="fas fa-times-circle text-danger me-2"></i>
-                                            Leaf is too damaged or unclear
-                                        </li>
-                                        <li class="mb-2">
-                                            <i class="fas fa-times-circle text-danger me-2"></i>
-                                            Background interference or other plants
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="known-diseases p-3">
-                                    <h5 class="text-success mb-3">
-                                        <i class="fas fa-database me-2"></i>
-                                        Our Model Can Detect
-                                    </h5>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-bug text-danger"></i>
-                                                </div>
-                                                <small>Aphids</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-worm text-warning"></i>
-                                                </div>
-                                                <small>Armyworm</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-cut text-danger"></i>
-                                                </div>
-                                                <small>Common Cutworm</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-circle text-warning"></i>
-                                                </div>
-                                                <small>Common Rust</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-cloud text-dark"></i>
-                                                </div>
-                                                <small>Common Smut</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-worm text-primary"></i>
-                                                </div>
-                                                <small>Corn Borer</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-spider text-dark"></i>
-                                                </div>
-                                                <small>Earwig</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-seedling text-warning"></i>
-                                                </div>
-                                                <small>Fusarium Ear Rot</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-circle text-secondary"></i>
-                                                </div>
-                                                <small>Gray Leaf Spot</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-leaf text-success"></i>
-                                                </div>
-                                                <small>Healthy Corn</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-leaf text-success"></i>
-                                                </div>
-                                                <small>Healthy Leaf</small>
-                                            </div>
-                                            <div class="disease-item">
-                                                <div class="disease-icon">
-                                                    <i class="fas fa-exclamation text-danger"></i>
-                                                </div>
-                                                <small>Leaf Blight & Leafhopper</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Image Preview -->
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h3 class="text-xl font-semibold gradient-text mb-4 flex items-center">
+                            <i class="fas fa-image mr-2"></i>
+                            Uploaded Image
+                        </h3>
+                        <div class="text-center mb-6">
+                            <img src="{{ user_image }}" alt="Uploaded Image" class="image-preview mx-auto">
                         </div>
                         
-                        <!-- Action Buttons -->
-                        <div class="text-center mt-4">
-                            <a href="{{ url_for('maiscan') }}" class="btn btn-retry me-3">
-                                <i class="fas fa-upload me-2"></i>
-                                Try Another Image
-                            </a>
-                            <a href="{{ url_for('maiscan') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>
-                                Back to Dashboard
-                            </a>
-                        </div>
-                        
-                        <!-- Tips Section -->
-                        <div class="mt-5">
-                            <h5 class="text-center mb-4">
-                                <i class="fas fa-lightbulb text-warning me-2"></i>
-                                Tips for Better Results
-                            </h5>
-                            <div class="row text-center">
-                                <div class="col-md-3 mb-3">
-                                    <div class="p-3 border rounded bg-light">
-                                        <i class="fas fa-leaf text-success" style="font-size: 2rem;"></i>
-                                        <p class="mt-2 mb-0"><small><strong>Focus on the Leaf</strong><br>Ensure corn leaf fills most of the frame</small></p>
+                        {% if confidence %}
+                        <div class="text-center">
+                            <div class="inline-block bg-white bg-opacity-80 px-4 py-3 rounded-xl shadow-sm">
+                                <p class="text-sm text-gray-600 mb-2">Confidence Level</p>
+                                <div class="flex items-center justify-center space-x-3">
+                                    <!-- Circular Progress -->
+                                    <div class="relative w-16 h-16">
+                                        <svg class="w-16 h-16 progress-ring" width="60" height="60">
+                                            <circle
+                                                class="text-gray-200"
+                                                stroke-width="6"
+                                                stroke="currentColor"
+                                                fill="transparent"
+                                                r="27"
+                                                cx="30"
+                                                cy="30"
+                                            />
+                                            <circle
+                                                class="progress-ring-circle text-orange-500"
+                                                stroke-width="6"
+                                                stroke-linecap="round"
+                                                stroke="currentColor"
+                                                fill="transparent"
+                                                r="27"
+                                                cx="30"
+                                                cy="30"
+                                                stroke-dasharray="169.56"
+                                                stroke-dashoffset="{{ 169.56 - (confidence * 169.56) }}"
+                                            />
+                                        </svg>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <span class="text-lg font-bold gradient-text-warning">{{ "%.1f"|format(confidence * 100) }}%</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <div class="p-3 border rounded bg-light">
-                                        <i class="fas fa-sun text-warning" style="font-size: 2rem;"></i>
-                                        <p class="mt-2 mb-0"><small><strong>Good Lighting</strong><br>Natural light works best</small></p>
-                                    </div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <div class="p-3 border rounded bg-light">
-                                        <i class="fas fa-search-plus text-primary" style="font-size: 2rem;"></i>
-                                        <p class="mt-2 mb-0"><small><strong>Clear & Sharp</strong><br>Avoid blurry or pixelated images</small></p>
-                                    </div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <div class="p-3 border rounded bg-light">
-                                        <i class="fas fa-crop text-info" style="font-size: 2rem;"></i>
-                                        <p class="mt-2 mb-0"><small><strong>Clean Background</strong><br>Minimize other objects in frame</small></p>
+                                    
+                                    <div class="text-left">
+                                        <p class="text-sm text-gray-600">Below threshold</p>
+                                        <div class="confidence-meter w-32">
+                                            <div class="confidence-fill" style="width: {{ confidence * 100 }}%"></div>
+                                        </div>
+                                        <p class="text-xs text-gray-500">Required: 70%+ confidence</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
+                    </div>
 
-                        <!-- Contact Info -->
-                        <div class="mt-4 text-center">
-                            <div class="alert alert-info" role="alert">
-                                <i class="fas fa-envelope me-2"></i>
-                                <strong>Need Help?</strong> If you believe this is a corn disease not in our database, 
-                                please contact our agricultural experts for manual assessment.
+                    <!-- Analysis Section -->
+                    <div class="space-y-6">
+                        <!-- Alert Box -->
+                        <div class="glass-card p-5 rounded-2xl border-l-4 border-orange-500 bg-orange-50 bg-opacity-50">
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-orange-500 text-xl mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-semibold text-orange-800 mb-2">Analysis Result</h4>
+                                    <p class="text-orange-700">
+                                        The AI couldn't confidently classify your image. This usually happens when the image doesn't match 
+                                        our trained disease patterns or has quality issues.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Possible Reasons -->
+                        <div class="glass-card p-5 rounded-2xl">
+                            <h4 class="text-lg font-semibold gradient-text mb-4 flex items-center">
+                                <i class="fas fa-search mr-2"></i>
+                                Possible Reasons
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="flex items-center p-3 bg-white bg-opacity-50 rounded-lg">
+                                    <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                                    <span class="text-sm">Not a corn leaf</span>
+                                </div>
+                                <div class="flex items-center p-3 bg-white bg-opacity-50 rounded-lg">
+                                    <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                                    <span class="text-sm">Poor image quality</span>
+                                </div>
+                                <div class="flex items-center p-3 bg-white bg-opacity-50 rounded-lg">
+                                    <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                                    <span class="text-sm">New disease type</span>
+                                </div>
+                                <div class="flex items-center p-3 bg-white bg-opacity-50 rounded-lg">
+                                    <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                                    <span class="text-sm">Multiple diseases</span>
+                                </div>
+                                <div class="flex items-center p-3 bg-white bg-opacity-50 rounded-lg">
+                                    <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                                    <span class="text-sm">Heavy damage</span>
+                                </div>
+                                <div class="flex items-center p-3 bg-white bg-opacity-50 rounded-lg">
+                                    <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                                    <span class="text-sm">Background noise</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Known Diseases Grid -->
+                <div class="glass-card p-6 rounded-2xl mb-8">
+                    <h3 class="text-xl font-semibold gradient-text mb-6 flex items-center justify-center">
+                        <i class="fas fa-database mr-2"></i>
+                        Diseases We Can Detect
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        {% set diseases = [
+                            {"name": "Aphids", "icon": "bug", "color": "red"},
+                            {"name": "Armyworm", "icon": "worm", "color": "yellow"},
+                            {"name": "Cutworm", "icon": "cut", "color": "orange"},
+                            {"name": "Common Rust", "icon": "circle", "color": "yellow"},
+                            {"name": "Common Smut", "icon": "cloud", "color": "gray"},
+                            {"name": "Corn Borer", "icon": "worm", "color": "blue"},
+                            {"name": "Earwig", "icon": "spider", "color": "gray"},
+                            {"name": "Fusarium Rot", "icon": "seedling", "color": "yellow"},
+                            {"name": "Gray Leaf Spot", "icon": "circle", "color": "gray"},
+                            {"name": "Healthy Corn", "icon": "leaf", "color": "green"},
+                            {"name": "Healthy Leaf", "icon": "leaf", "color": "green"},
+                            {"name": "Leaf Blight", "icon": "exclamation", "color": "red"}
+                        ] %}
+                        
+                        {% for disease in diseases %}
+                        <div class="disease-card p-4 rounded-xl text-center">
+                            <div class="w-12 h-12 rounded-full bg-{{ disease.color }}-100 flex items-center justify-center text-{{ disease.color }}-600 mx-auto mb-2">
+                                <i class="fas fa-{{ disease.icon }}"></i>
+                            </div>
+                            <p class="text-xs font-medium text-gray-700">{{ disease.name }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Tips Section -->
+                <div class="glass-card p-6 rounded-2xl mb-8">
+                    <h3 class="text-xl font-semibold gradient-text mb-6 text-center">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        Tips for Better Results
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="tip-card p-4 rounded-xl text-center">
+                            <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600 mx-auto mb-3">
+                                <i class="fas fa-leaf text-2xl"></i>
+                            </div>
+                            <h5 class="font-semibold text-gray-800 mb-2">Focus on Leaf</h5>
+                            <p class="text-sm text-gray-600">Ensure corn leaf fills most of the frame for accurate analysis</p>
+                        </div>
+                        
+                        <div class="tip-card p-4 rounded-xl text-center">
+                            <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 mx-auto mb-3">
+                                <i class="fas fa-sun text-2xl"></i>
+                            </div>
+                            <h5 class="font-semibold text-gray-800 mb-2">Good Lighting</h5>
+                            <p class="text-sm text-gray-600">Use natural light and avoid shadows for clear images</p>
+                        </div>
+                        
+                        <div class="tip-card p-4 rounded-xl text-center">
+                            <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mx-auto mb-3">
+                                <i class="fas fa-search-plus text-2xl"></i>
+                            </div>
+                            <h5 class="font-semibold text-gray-800 mb-2">Clear & Sharp</h5>
+                            <p class="text-sm text-gray-600">Avoid blurry images and ensure good focus on affected areas</p>
+                        </div>
+                        
+                        <div class="tip-card p-4 rounded-xl text-center">
+                            <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mx-auto mb-3">
+                                <i class="fas fa-crop text-2xl"></i>
+                            </div>
+                            <h5 class="font-semibold text-gray-800 mb-2">Clean Background</h5>
+                            <p class="text-sm text-gray-600">Minimize other objects and use plain backgrounds</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center space-y-4 md:space-y-0 md:space-x-4 md:flex md:justify-center">
+                    <a href="{{ url_for('maiscan') }}" class="btn-warning px-8 py-3 rounded-lg font-semibold inline-block w-full md:w-auto">
+                        <i class="fas fa-upload mr-2"></i>
+                        Try Another Image
+                    </a>
+                    <a href="{{ url_for('maiscan') }}" class="btn-primary px-8 py-3 rounded-lg font-semibold inline-block w-full md:w-auto">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+
+                <!-- Support Section -->
+                <div class="mt-8 text-center">
+                    <div class="glass-card p-5 rounded-2xl bg-blue-50 bg-opacity-50 border-l-4 border-blue-500">
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-hands-helping text-blue-500 text-xl mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-blue-800">Need Expert Help?</h4>
+                                <p class="text-blue-700 text-sm">
+                                    Contact our agricultural experts for manual assessment and personalized advice.
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
+
+    <!-- Auto redirect notification -->
+    <div id="redirect-notification" class="fixed bottom-4 right-4 glass-card p-4 rounded-xl shadow-lg max-w-sm hidden">
+        <div class="flex items-center">
+            <i class="fas fa-clock text-orange-500 mr-3"></i>
+            <div class="flex-1">
+                <p class="text-sm font-medium text-gray-800">Redirecting to dashboard</p>
+                <p class="text-xs text-gray-600" id="countdown">in 30 seconds</p>
+            </div>
+            <button onclick="cancelRedirect()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Auto redirect after timeout (optional) -->
     <script>
-        // Optional: Auto redirect to dashboard after 45 seconds
-        setTimeout(function() {
-            window.location.href = "{{ url_for('maiscan') }}";
-        }, 30000);
+        let redirectTimeout;
+        let countdown = 30;
+        
+        // Show redirect notification after 5 seconds
+        setTimeout(() => {
+            document.getElementById('redirect-notification').classList.remove('hidden');
+            startCountdown();
+        }, 5000);
+        
+        function startCountdown() {
+            redirectTimeout = setTimeout(() => {
+                window.location.href = "{{ url_for('maiscan') }}";
+            }, 30000);
+            
+            const countdownElement = document.getElementById('countdown');
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = `in ${countdown} seconds`;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+        }
+        
+        function cancelRedirect() {
+            clearTimeout(redirectTimeout);
+            document.getElementById('redirect-notification').classList.add('hidden');
+        }
+        
+        // Animate confidence meter on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const confidenceFill = document.querySelector('.confidence-fill');
+            if (confidenceFill) {
+                // Force reflow to trigger animation
+                confidenceFill.style.width = '0%';
+                setTimeout(() => {
+                    confidenceFill.style.width = '{{ confidence * 100 }}%';
+                }, 100);
+            }
+        });
     </script>
 </body>
 </html>
