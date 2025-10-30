@@ -16,7 +16,6 @@ import logging
 import tempfile
 import requests
 import tensorflow as tf
-from tensorflow.keras import layers, models
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -161,8 +160,8 @@ def load_user(user_id):
 # ---------------- ML MODEL LOADING ----------------
 model = None
 
-def load_ml_model_with_compatibility():
-    """Load ML model with enhanced compatibility handling"""
+def load_ml_model():
+    """Load ML model from Google Drive with compatibility handling"""
     global model
     
     try:
@@ -173,7 +172,7 @@ def load_ml_model_with_compatibility():
         FILE_ID = "1MMwvzqgThRf5jwUeCBPQmzHnG9mv9_ec"
         MODEL_URL = f"https://drive.google.com/uc?id={FILE_ID}"
 
-        print("🔄 Loading model from Google Drive with compatibility handling...")
+        print("🔄 Loading model from Google Drive...")
         
         # Create a temporary file to store the model
         with tempfile.NamedTemporaryFile(delete=False, suffix='.keras') as temp_model_file:
@@ -196,37 +195,23 @@ def load_ml_model_with_compatibility():
                 print("❌ Model file not found after download")
                 return
 
-            # Try different loading methods with compatibility fixes
-            print("🔄 Attempting to load model with compatibility layer...")
+            # Try different loading methods
+            print("🔄 Loading model into memory...")
             
-            # Method 1: Try standard load with custom objects
+            # Method 1: Try standard load
             try:
                 model = load_model(temp_model_path, compile=False)
                 print("✅ Model loaded successfully with standard method")
             except Exception as e1:
                 print(f"⚠️ Standard loading failed: {e1}")
                 
-                # Method 2: Try with custom objects and safe mode
+                # Method 2: Try with safe_mode=False
                 try:
                     model = load_model(temp_model_path, compile=False, safe_mode=False)
                     print("✅ Model loaded successfully with safe_mode=False")
                 except Exception as e2:
                     print(f"⚠️ Safe mode loading failed: {e2}")
-                    
-                    # Method 3: Try loading weights only and rebuild model
-                    try:
-                        print("🔄 Attempting to load model architecture with weights...")
-                        # This is a fallback - you might need to adjust based on your model architecture
-                        model = tf.keras.models.load_model(
-                            temp_model_path,
-                            compile=False,
-                            custom_objects=None,
-                            safe_mode=False
-                        )
-                        print("✅ Model loaded with custom handling")
-                    except Exception as e3:
-                        print(f"❌ All loading methods failed: {e3}")
-                        model = None
+                    model = None
 
             # If model loaded successfully, test it
             if model is not None:
@@ -237,7 +222,6 @@ def load_ml_model_with_compatibility():
                     print(f"✅ Model test prediction successful, shape: {test_prediction.shape}")
                 except Exception as test_error:
                     print(f"⚠️ Model test prediction failed: {test_error}")
-                    # Model loaded but prediction failed - might still work with proper input
                     print("🔄 Model loaded but test failed, will proceed with caution")
             
         finally:
@@ -250,51 +234,16 @@ def load_ml_model_with_compatibility():
         print(f"❌ Error loading model from cloud: {e}")
         model = None
 
-def create_fallback_model():
-    """Create a simple fallback model if the main model fails to load"""
-    global model
-    try:
-        print("🔄 Creating fallback model architecture...")
-        
-        # Create a simple CNN model similar to what might be expected
-        fallback_model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
-            tf.keras.layers.MaxPooling2D(2, 2),
-            tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-            tf.keras.layers.MaxPooling2D(2, 2),
-            tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
-            tf.keras.layers.MaxPooling2D(2, 2),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(512, activation='relu'),
-            tf.keras.layers.Dropout(0.5),
-            tf.keras.layers.Dense(13, activation='softmax')  # 13 classes for your diseases
-        ])
-        
-        # Compile the model (though we won't use it for training)
-        fallback_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-        
-        print("✅ Fallback model created successfully")
-        return fallback_model
-        
-    except Exception as e:
-        print(f"❌ Failed to create fallback model: {e}")
-        return None
-
 # Load the model when the app starts
 print("🚀 Starting ML model loading from Google Drive...")
 print(f"🧪 TensorFlow version: {tf.__version__}")
-print(f"🧪 Keras version: {tf.keras.__version__}")
 
-load_ml_model_with_compatibility()
+load_ml_model()
 
-# If primary method fails, create a fallback model
 if model is None:
-    print("🔄 Primary loading failed, creating fallback model...")
-    model = create_fallback_model()
-    if model is not None:
-        print("⚠️ Using fallback model - predictions may be less accurate")
-    else:
-        print("❌ Failed to load any model")
+    print("❌ Failed to load model")
+else:
+    print("✅ Model loaded successfully")
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -307,13 +256,11 @@ def home():
 @app.route("/debug")
 def debug():
     model_status = "Loaded" if model is not None else "Not Loaded"
-    model_type = "Fallback" if model is not None and hasattr(model, '_is_fallback') else "Main" if model is not None else "None"
     current_dir = os.path.dirname(os.path.abspath(__file__))
     files_in_dir = os.listdir(current_dir)
     
     return jsonify({
         "model_status": model_status,
-        "model_type": model_type,
         "model_source": "Google Drive Cloud",
         "tensorflow_version": tf.__version__,
         "current_directory": current_dir,
@@ -321,7 +268,6 @@ def debug():
         "upload_folder_exists": os.path.exists(app.config["UPLOAD_FOLDER"])
     })
 
-# [Keep all your existing routes the same as before - register, login, maiscan, predict, etc.]
 # -------- REGISTER --------
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -410,6 +356,53 @@ def forgot_password():
                 flash("Error sending reset email. Please try again.", "danger")
     
     return render_template("forgot_password.html")
+
+# -------- RESET PASSWORD --------
+@app.route("/reset-password", methods=["GET", "POST"])
+def reset_password():
+    return render_template("reset_password.html")
+
+# -------- LOGOUT --------
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.", "success")
+    return redirect(url_for("home"))
+
+# -------- UPDATE ACCOUNT --------
+@app.route("/update-account", methods=["POST"])
+@login_required
+def update_account():
+    username = request.form.get("username", "").strip()
+    email = request.form.get("email", "").strip()
+    password = request.form.get("password", "").strip()
+
+    try:
+        updates = {}
+
+        # Update email
+        if email and email != current_user.email:
+            auth.update_user(current_user.id, email=email)
+            updates["email"] = email
+
+        # Update password
+        if password:
+            auth.update_user(current_user.id, password=password)
+
+        # Update Firestore user profile
+        if username:
+            updates["username"] = username
+
+        if updates:
+            db.collection("Users").document(current_user.id).update(updates)
+
+        flash("Account updated successfully!", "success")
+    except Exception as e:
+        print("Update error:", e)
+        flash("Failed to update account: " + str(e), "danger")
+
+    return redirect(url_for("maiscan"))
 
 # -------- MAISCAN DASHBOARD --------
 @app.route("/maiscan")
@@ -555,14 +548,10 @@ def pred_corn_disease(img_path):
         img_array = img_to_array(img) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
 
-        # Make prediction with error handling
-        try:
-            prediction = model.predict(img_array, verbose=0)
-            pred_class = np.argmax(prediction)
-            confidence = float(np.max(prediction))
-        except Exception as predict_error:
-            print(f"❌ Prediction error: {predict_error}")
-            return "Prediction Error", "invalid_image.html", 0.0
+        # Make prediction
+        prediction = model.predict(img_array, verbose=0)
+        pred_class = np.argmax(prediction)
+        confidence = float(np.max(prediction))
 
         CONFIDENCE_THRESHOLD = 0.7
         if confidence < CONFIDENCE_THRESHOLD:
