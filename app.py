@@ -8,7 +8,6 @@ import os
 from werkzeug.utils import secure_filename
 import secrets
 import numpy as np
-from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import load_img, img_to_array
 from dotenv import load_dotenv
 import gdown
@@ -158,24 +157,32 @@ def load_user(user_id):
         return None
 
 # ---------------- ML MODEL LOADING ----------------
-model = None
+tflite_interpreter = None
+input_details = None
+output_details = None
+is_quantized = False
+input_scale = 0
+input_zero_point = 0
+output_scale = 0
+output_zero_point = 0
 
-def load_ml_model():
-    """Load ML model from Google Drive with compatibility handling"""
-    global model
+def load_tflite_model():
+    """Load TFLite model from Google Drive"""
+    global tflite_interpreter, input_details, output_details, is_quantized
+    global input_scale, input_zero_point, output_scale, output_zero_point
     
     try:
         # Clear any existing TensorFlow session
         tf.keras.backend.clear_session()
         
         # Google Drive file ID
-        FILE_ID = "1bJEeW12ajboL4goLy17Fq_4aT0S1vYPr"
+        FILE_ID = "1UCXZvjyozzoQKhA74ldc92PpAFsL_7t4"
         MODEL_URL = f"https://drive.google.com/uc?id={FILE_ID}"
 
-        print("🔄 Loading model from Google Drive...")
+        print("🔄 Loading TFLite model from Google Drive...")
         
         # Create a temporary file to store the model
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.keras') as temp_model_file:
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.tflite') as temp_model_file:
             temp_model_path = temp_model_file.name
 
         try:
@@ -185,44 +192,62 @@ def load_ml_model():
             # Verify the file was downloaded
             if os.path.exists(temp_model_path):
                 file_size = os.path.getsize(temp_model_path)
-                print(f"✅ Model downloaded successfully, size: {file_size} bytes")
+                print(f"✅ TFLite model downloaded successfully, size: {file_size} bytes")
                 
                 if file_size == 0:
                     print("❌ Model file is empty")
                     os.remove(temp_model_path)
-                    return
+                    return False
             else:
                 print("❌ Model file not found after download")
-                return
+                return False
 
-            # Try different loading methods
-            print("🔄 Loading model into memory...")
+            # Load TFLite model and allocate tensors
+            print("🔄 Loading TFLite interpreter...")
+            tflite_interpreter = tf.lite.Interpreter(model_path=temp_model_path)
+            tflite_interpreter.allocate_tensors()
             
-            # Method 1: Try standard load
+            # Get input and output tensors
+            input_details = tflite_interpreter.get_input_details()
+            output_details = tflite_interpreter.get_output_details()
+            
+            # Check if model is quantized
+            is_quantized = input_details[0]['dtype'] == np.int8
+            input_scale = input_details[0]['quantization'][0]
+            input_zero_point = input_details[0]['quantization'][1]
+            output_scale = output_details[0]['quantization'][0]
+            output_zero_point = output_details[0]['quantization'][1]
+            
+            print(f"✅ TFLite model loaded successfully")
+            print(f"📊 Input details: {input_details[0]['shape']}")
+            print(f"📊 Output details: {output_details[0]['shape']}")
+            print(f"📊 Model is quantized: {is_quantized}")
+            if is_quantized:
+                print(f"📊 Input scale: {input_scale}, zero point: {input_zero_point}")
+                print(f"📊 Output scale: {output_scale}, zero point: {output_zero_point}")
+            
+            # Test the model with a simple prediction
+            test_input = np.random.random((1, 224, 224, 3)).astype(np.float32)
             try:
-                model = load_model(temp_model_path, compile=False)
-                print("✅ Model loaded successfully with standard method")
-            except Exception as e1:
-                print(f"⚠️ Standard loading failed: {e1}")
+                if is_quantized:
+                    # Quantize the test input
+                    test_input_quantized = (test_input / input_scale + input_zero_point).astype(np.int8)
+                    tflite_interpreter.set_tensor(input_details[0]['index'], test_input_quantized)
+                else:
+                    tflite_interpreter.set_tensor(input_details[0]['index'], test_input)
                 
-                # Method 2: Try with safe_mode=False
-                try:
-                    model = load_model(temp_model_path, compile=False, safe_mode=False)
-                    print("✅ Model loaded successfully with safe_mode=False")
-                except Exception as e2:
-                    print(f"⚠️ Safe mode loading failed: {e2}")
-                    model = None
-
-            # If model loaded successfully, test it
-            if model is not None:
-                # Test the model with a simple prediction
-                test_input = np.random.random((1, 224, 224, 3)).astype(np.float32)
-                try:
-                    test_prediction = model.predict(test_input, verbose=0)
-                    print(f"✅ Model test prediction successful, shape: {test_prediction.shape}")
-                except Exception as test_error:
-                    print(f"⚠️ Model test prediction failed: {test_error}")
-                    print("🔄 Model loaded but test failed, will proceed with caution")
+                tflite_interpreter.invoke()
+                test_output = tflite_interpreter.get_tensor(output_details[0]['index'])
+                
+                if is_quantized:
+                    # Dequantize the output
+                    test_output = (test_output.astype(np.float32) - output_zero_point) * output_scale
+                
+                print(f"✅ Model test prediction successful, shape: {test_output.shape}")
+                return True
+            except Exception as test_error:
+                print(f"⚠️ Model test prediction failed: {test_error}")
+                return True  # Still return True as model loaded
             
         finally:
             # Clean up temporary file
@@ -231,19 +256,19 @@ def load_ml_model():
                 print("🗑️ Temporary model file cleaned up")
 
     except Exception as e:
-        print(f"❌ Error loading model from cloud: {e}")
-        model = None
+        print(f"❌ Error loading TFLite model from cloud: {e}")
+        return False
 
 # Load the model when the app starts
-print("🚀 Starting ML model loading from Google Drive...")
+print("🚀 Starting TFLite model loading from Google Drive...")
 print(f"🧪 TensorFlow version: {tf.__version__}")
 
-load_ml_model()
+model_loaded = load_tflite_model()
 
-if model is None:
-    print("❌ Failed to load model")
+if not model_loaded:
+    print("❌ Failed to load TFLite model")
 else:
-    print("✅ Model loaded successfully")
+    print("✅ TFLite model loaded successfully")
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -255,12 +280,14 @@ def home():
 
 @app.route("/debug")
 def debug():
-    model_status = "Loaded" if model is not None else "Not Loaded"
+    model_status = "Loaded" if tflite_interpreter is not None else "Not Loaded"
     current_dir = os.path.dirname(os.path.abspath(__file__))
     files_in_dir = os.listdir(current_dir)
     
     return jsonify({
         "model_status": model_status,
+        "model_type": "TFLite",
+        "model_quantized": is_quantized,
         "model_source": "Google Drive Cloud",
         "tensorflow_version": tf.__version__,
         "current_directory": current_dir,
@@ -440,14 +467,14 @@ def maiscan():
         disease_count=disease_count,
         most_common_disease=most_common_disease,
         disease_types=disease_types,
-        model_loaded=model is not None
+        model_loaded=tflite_interpreter is not None
     )
 
 # -------- PREDICTION --------
 @app.route("/predict", methods=["POST"])
 @login_required
 def predict():
-    if model is None:
+    if tflite_interpreter is None:
         flash("ML model is not available. Please try again later.", "danger")
         return redirect(url_for("maiscan"))
         
@@ -492,7 +519,7 @@ def predict():
 @app.route("/api/predict", methods=['POST'])
 @login_required
 def api_predict():
-    if model is None:
+    if tflite_interpreter is None:
         return jsonify({"valid": False, "error": "ML model not available", "disease": "", "confidence": 0})
             
     if 'image' not in request.files:
@@ -533,8 +560,8 @@ def api_predict():
 
 # -------- PREDICTION FUNCTION --------
 def pred_corn_disease(img_path):
-    if model is None:
-        print("❌ Model is not loaded, cannot make prediction")
+    if tflite_interpreter is None:
+        print("❌ TFLite model is not loaded, cannot make prediction")
         return "Model Error", "invalid_image.html", 0.0
     
     try:
@@ -546,10 +573,24 @@ def pred_corn_disease(img_path):
         # Load and preprocess image
         img = load_img(img_path, target_size=(224, 224))
         img_array = img_to_array(img) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
+        img_array = np.expand_dims(img_array, axis=0).astype(np.float32)
 
-        # Make prediction
-        prediction = model.predict(img_array, verbose=0)
+        # Make prediction with TFLite interpreter
+        if is_quantized:
+            # Quantize the input for quantized models
+            img_array_quantized = (img_array / input_scale + input_zero_point).astype(np.int8)
+            tflite_interpreter.set_tensor(input_details[0]['index'], img_array_quantized)
+        else:
+            # Use float32 for non-quantized models
+            tflite_interpreter.set_tensor(input_details[0]['index'], img_array)
+        
+        tflite_interpreter.invoke()
+        prediction = tflite_interpreter.get_tensor(output_details[0]['index'])
+        
+        # Dequantize output if model is quantized
+        if is_quantized:
+            prediction = (prediction.astype(np.float32) - output_zero_point) * output_scale
+        
         pred_class = np.argmax(prediction)
         confidence = float(np.max(prediction))
 
@@ -560,17 +601,16 @@ def pred_corn_disease(img_path):
         diseases = {
             0: ("Aphids", "aphids.html"),
             1: ("Armyworm", "armyworm.html"),
-            2: ("Common Cutworm", "common_cutworm.html"),
-            3: ("Common Rust", "common_rust.html"),
-            4: ("Common Smut", "common_smut.html"),
-            5: ("Corn Borer", "corn_borer.html"),
-            6: ("Earwig", "earwig.html"),
-            7: ("Fusarium Ear Rot", "fusarium_ear_rot.html"),
-            8: ("Gray Leaf Spot", "gray_leaf_spot.html"),
-            9: ("Healthy Corn", "healthycorn.html"),
-            10: ("Healthy Leaf", "healthyleaf.html"),
-            11: ("Leaf Blight", "leaf_blight.html"),
-            12: ("Leafhopper", "leafhopper.html"),
+            2: ("Common Rust", "common_rust.html"),
+            3: ("Common Smut", "common_smut.html"),
+            4: ("Corn Borer", "corn_borer.html"),
+            5: ("Earwig", "earwig.html"),
+            6: ("Fusarium Ear Rot", "fusarium_ear_rot.html"),
+            7: ("Gray Leaf Spot", "gray_leaf_spot.html"),
+            8: ("Healthy Corn", "healthycorn.html"),
+            9: ("Healthy Leaf", "healthyleaf.html"),
+            10: ("Leaf Blight", "leaf_blight.html"),
+            11: ("Leafhopper", "leafhopper.html"),
         }
 
         disease_name, template_name = diseases.get(pred_class, ("Unknown Class", "invalid_image.html"))
@@ -585,7 +625,9 @@ def pred_corn_disease(img_path):
 def health_check():
     return jsonify({
         'status': 'healthy',
-        'model_loaded': model is not None,
+        'model_loaded': tflite_interpreter is not None,
+        'model_type': 'TFLite',
+        'model_quantized': is_quantized,
         'model_source': 'Google Drive Cloud',
         'timestamp': datetime.datetime.utcnow().isoformat()
     })
@@ -598,7 +640,9 @@ if __name__ == "__main__":
     print(f"🚀 Starting Flask app on port {port}")
     print(f"📁 Current directory: {os.getcwd()}")
     print(f"📁 Files in directory: {os.listdir('.')}")
-    print(f"✅ Model status: {'Loaded' if model is not None else 'Not loaded'}")
+    print(f"✅ Model status: {'Loaded' if tflite_interpreter is not None else 'Not loaded'}")
+    print(f"🌐 Model type: TFLite")
+    print(f"🌐 Model quantized: {is_quantized}")
     print(f"🌐 Model source: Google Drive Cloud")
     
     app.run(debug=True, host="0.0.0.0", port=port, threaded=True)
