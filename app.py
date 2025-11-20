@@ -442,12 +442,36 @@ def maiscan():
 
         # Disease stats
         disease_counts = {}
+        chart_data = [] # Prep for JSON output
+
         for up in uploads:
             disease = up.get("disease_type", "Unknown")
             disease_counts[disease] = disease_counts.get(disease, 0) + 1
+            
+            # Process date for chart filtering
+            upload_date = up.get("upload_date")
+            date_str = ""
+            if upload_date:
+                # Handle Firestore timestamp (datetime obj)
+                if hasattr(upload_date, 'isoformat'):
+                    date_str = upload_date.isoformat()
+                else:
+                    date_str = str(upload_date)
+            
+            chart_data.append({
+                "disease": disease,
+                "date": date_str
+            })
 
         total_images = sum(disease_counts.values())
+        # Sum of all counts excluding healthy variants
         disease_count = sum(c for d, c in disease_counts.items() if "healthy" not in d.lower())
+        
+        # Calculate Disease Percentage
+        disease_percentage = 0.0
+        if total_images > 0:
+            disease_percentage = round((disease_count / total_images) * 100, 1)
+
         most_common_disease = max(
             (d for d in disease_counts if "healthy" not in d.lower()),
             key=lambda d: disease_counts[d],
@@ -458,6 +482,8 @@ def maiscan():
     except Exception as e:
         print("Error loading dashboard:", e)
         uploads, disease_counts, total_images, disease_count, most_common_disease, disease_types = [], {}, 0, 0, "None", []
+        disease_percentage = 0.0
+        chart_data = []
 
     return render_template(
         "mais.html",
@@ -465,6 +491,8 @@ def maiscan():
         disease_counts=disease_counts,
         total_images=total_images,
         disease_count=disease_count,
+        disease_percentage=disease_percentage,
+        chart_data=chart_data,
         most_common_disease=most_common_disease,
         disease_types=disease_types,
         model_loaded=tflite_interpreter is not None
