@@ -491,6 +491,118 @@
             text-align: center;
             padding: 20px;
         }
+
+        #chat-launcher {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #198754; /* Corn Green */
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        cursor: pointer;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        transition: transform 0.3s ease;
+    }
+    #chat-launcher:hover {
+        transform: scale(1.1);
+    }
+
+    /* Chat Window */
+    #chat-window {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 350px;
+        height: 500px;
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+        z-index: 9999;
+        display: none; /* Hidden by default */
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #e1e1e1;
+    }
+
+    /* Header */
+    .chat-header {
+        background-color: #198754;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .chat-header h5 { margin: 0; font-size: 16px; }
+
+    /* Messages Area */
+    .chat-messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+    }
+    
+    /* Message Bubbles */
+    .message {
+        margin-bottom: 10px;
+        max-width: 80%;
+        padding: 10px 12px;
+        border-radius: 15px;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    .message.user {
+        background-color: #198754;
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 2px;
+    }
+    .message.bot {
+        background-color: #e9ecef;
+        color: #333;
+        margin-right: auto;
+        border-bottom-left-radius: 2px;
+    }
+
+    /* Input Area */
+    .chat-input-area {
+        padding: 10px;
+        background-color: white;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 10px;
+    }
+    #chat-input {
+        flex: 1;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        padding: 8px 15px;
+        outline: none;
+    }
+    #chat-send {
+        background-color: #198754;
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Typing Indicator */
+    .typing-indicator { font-style: italic; color: #888; font-size: 12px; margin-bottom: 5px; display: none;}
         
     </style>
 </head>
@@ -2401,6 +2513,30 @@
   </div>
 </div>
 
+<button id="chat-launcher" onclick="toggleChat()">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <div id="chat-window">
+        <div class="chat-header">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-leaf me-2"></i>
+                <h5>MaisBot AI Assistant</h5>
+            </div>
+            <button onclick="toggleChat()" class="btn btn-sm text-white"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot">Hello! I'm MaisBot. Ask me anything about corn diseases or cultivation! 🌽</div>
+        </div>
+        <div class="typing-indicator ps-3" id="typing-indicator">MaisBot is typing...</div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask about corn..." onkeypress="handleEnter(event)">
+            <button id="chat-send" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
 
 
     <!-- Bootstrap core JS-->
@@ -2414,6 +2550,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         // Image preview functionality
         const input = document.getElementById('image-upload');
@@ -3459,7 +3596,85 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
-    </script>
+
+function toggleChat() {
+        const chatWindow = document.getElementById('chat-window');
+        if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+            chatWindow.style.display = 'flex';
+            document.getElementById('chat-input').focus();
+        } else {
+            chatWindow.style.display = 'none';
+        }
+    }
+
+    function handleEnter(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+        const messagesContainer = document.getElementById('chat-messages');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        if (!message) return;
+
+        // 1. Add User Message
+        appendMessage('user', message);
+        input.value = '';
+
+        // 2. Show Loading
+        typingIndicator.style.display = 'block';
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        try {
+            // 3. Call Backend API
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await response.json();
+            
+            // 4. Hide Loading
+            typingIndicator.style.display = 'none';
+
+            // 5. Add Bot Response
+            if (data.response) {
+                // Use marked.parse if available for markdown, otherwise raw text
+                const formattedResponse = typeof marked !== 'undefined' ? marked.parse(data.response) : data.response;
+                appendMessage('bot', formattedResponse, true);
+            } else {
+                appendMessage('bot', "Sorry, I couldn't process that request.");
+            }
+
+        } catch (error) {
+            console.error('Chat Error:', error);
+            typingIndicator.style.display = 'none';
+            appendMessage('bot', "Error connecting to the Corn Expert. Please try again.");
+        }
+    }
+
+    function appendMessage(sender, text, isHtml = false) {
+        const messagesContainer = document.getElementById('chat-messages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender}`;
+        
+        if (isHtml) {
+            msgDiv.innerHTML = text;
+        } else {
+            msgDiv.textContent = text;
+        }
+        
+        messagesContainer.appendChild(msgDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+</script>
 </body>
 
 </html>

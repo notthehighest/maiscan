@@ -15,6 +15,7 @@ import logging
 import tempfile
 import requests
 import tensorflow as tf
+import google.generativeai as genai  # <--- NEW IMPORT
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -22,6 +23,16 @@ logger = logging.getLogger(__name__)
 
 # ---------------- LOAD ENV ----------------
 load_dotenv()
+
+# ---------------- GEMINI AI SETUP ----------------
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+    # Using the flash model for faster response times
+    gemini_model = genai.GenerativeModel('gemini-2.0-flash')
+else:
+    print("⚠️ WARNING: GEMINI_API_KEY not found in environment variables.")
+    gemini_model = None
 
 # ---------------- FLASK SETUP ----------------
 app = Flask(__name__)
@@ -430,6 +441,39 @@ def update_account():
         flash("Failed to update account: " + str(e), "danger")
 
     return redirect(url_for("maiscan"))
+
+# -------- GEMINI CHAT API --------
+@app.route("/api/chat", methods=["POST"])
+@login_required
+def chat_api():
+    """API endpoint for the Corn AI Chatbot"""
+    if not gemini_model:
+        return jsonify({"error": "AI service not configured"}), 503
+        
+    try:
+        data = request.get_json()
+        user_message = data.get("message", "").strip()
+        
+        if not user_message:
+            return jsonify({"error": "Empty message"}), 400
+
+        # Context engineering: Ensure the AI acts as a Corn Expert
+        system_instruction = (
+            "You are MaisBot, an expert agricultural assistant specializing ONLY in corn (maize) farming, "
+            "diseases (like rust, blight, leaf spot, etc.), and cultivation. "
+            "If the user asks about something unrelated to corn or agriculture, politely refuse and steer them back to corn. "
+            "Keep your answers concise, helpful, and easy to understand for farmers."
+        )
+        
+        # Construct the chat session
+        chat = gemini_model.start_chat(history=[])
+        response = chat.send_message(f"System: {system_instruction}\nUser: {user_message}")
+        
+        return jsonify({"response": response.text})
+        
+    except Exception as e:
+        print(f"Chat API Error: {e}")
+        return jsonify({"error": "Failed to process request"}), 500
 
 # -------- MAISCAN DASHBOARD --------
 @app.route("/maiscan")
