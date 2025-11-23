@@ -70,3 +70,4 @@ wheel==0.40.0
 mega.py==1.0.8
 gdown
 google-generativeai
+flask-mail

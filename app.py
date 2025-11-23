@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
@@ -16,6 +16,9 @@ import tempfile
 import requests
 import tensorflow as tf
 import google.generativeai as genai  # <--- NEW IMPORT
+from flask_mail import Mail, Message
+import random
+import string
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -142,6 +145,54 @@ if pb_result:
 else:
     pb, pb_auth = None, None
 
+# ---------------- MAIL SETUP ----------------
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME") 
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD") 
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_USERNAME")
+
+mail = Mail(app)
+
+# Helper to generate code
+def generate_otp():
+    return ''.join(random.choices(string.digits, k=6))
+
+# -------- API: SEND OTP (AJAX) --------
+@app.route("/api/send-otp", methods=["POST"])
+def send_otp_api():
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    
+    if not email:
+        return jsonify({"success": False, "message": "Email is required"}), 400
+
+    # Optional: Check if email already exists in Firebase
+    try:
+        auth.get_user_by_email(email)
+        return jsonify({"success": False, "message": "Email is already registered. Please login."}), 400
+    except:
+        pass # Email is available
+
+    try:
+        otp_code = generate_otp()
+        
+        # Save code in session to verify later
+        session['verification_code'] = otp_code
+        session['verification_email'] = email
+        
+        # Send Email
+        msg = Message("MAISCAN Verification Code", recipients=[email])
+        msg.body = f"Your verification code is: {otp_code}"
+        mail.send(msg)
+        
+        return jsonify({"success": True, "message": "Code sent!"})
+        
+    except Exception as e:
+        print(f"Mail Error: {e}")
+        return jsonify({"success": False, "message": "Failed to send email. Check settings."}), 500
+
 # ---------------- FLASK-LOGIN SETUP ----------------
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
@@ -149,10 +200,11 @@ login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "info"
 
 class User(UserMixin):
-    def __init__(self, uid, email, username=None):
+    def __init__(self, uid, email, username=None, address=None):
         self.id = uid
         self.email = email
         self.username = username
+        self.address = address or {} # Store address dictionary
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -160,9 +212,12 @@ def load_user(user_id):
         user_record = auth.get_user(user_id)
         user_doc = db.collection("Users").document(user_id).get()
         username = None
+        address = {}
         if user_doc.exists:
-            username = user_doc.to_dict().get("username")
-        return User(uid=user_record.uid, email=user_record.email, username=username)
+            data = user_doc.to_dict()
+            username = data.get("username") or data.get("full_name")
+            address = data.get("address", {})
+        return User(uid=user_record.uid, email=user_record.email, username=username, address=address)
     except Exception as e:
         print("Error loading user:", e)
         return None
@@ -306,37 +361,76 @@ def debug():
         "upload_folder_exists": os.path.exists(app.config["UPLOAD_FOLDER"])
     })
 
-# -------- REGISTER --------
+# -------- REGISTER (UPDATED) --------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
+        # 1. Get Form Data
         email = request.form.get("email", "").strip()
+        user_otp = request.form.get("otp_code", "").strip()
         password = request.form.get("password", "")
+        full_name = request.form.get("full_name", "").strip()
+        
+        # Address Data
+        address_data = {
+            "region": request.form.get("region_text", "").strip(),
+            "province": request.form.get("province_text", "").strip(),
+            "city": request.form.get("city_text", "").strip(),
+            "barangay": request.form.get("barangay_text", "").strip(),
+            "street": request.form.get("street", "").strip(),
+            "zip_code": request.form.get("zip_code", "").strip(),
+            "country": "Philippines"
+        }
 
-        if not email or not password:
-            flash("Email and password are required.", "danger")
+        # 2. VERIFY OTP
+        session_otp = session.get("verification_code")
+        session_email = session.get("verification_email")
+
+        if not session_otp or not session_email:
+            flash("Please click 'Send Code' to verify your email first.", "warning")
+            return render_template("register.html")
+        
+        if email != session_email:
+            flash("The email you entered does not match the one verified.", "danger")
             return render_template("register.html")
 
-        try:
-            # ✅ Create user in Firebase Authentication
-            user_record = auth.create_user(email=email, password=password)
+        if user_otp != session_otp:
+            flash("Invalid Verification Code.", "danger")
+            return render_template("register.html")
 
-            # ✅ Save extra data in Firestore
+        # 3. Create User (If OTP matches)
+        try:
+            # Create in Auth (Email verified = True because they passed OTP)
+            user_record = auth.create_user(
+                email=email, 
+                password=password,
+                email_verified=True 
+            )
+
+            # Create in Firestore
             db.collection("Users").document(user_record.uid).set({
                 "email": email,
+                "username": full_name,
+                "full_name": full_name,
+                "address": address_data,
+                "email_verified": True,
                 "created_at": datetime.datetime.utcnow()
             })
+            
+            # Clean session
+            session.pop('verification_code', None)
+            session.pop('verification_email', None)
 
-            flash("Registration successful! Please log in.", "success")
+            flash("Account created successfully! Please login.", "success")
             return redirect(url_for("login"))
 
         except Exception as e:
-            print("Registration error:", e)
-            flash("Registration failed: " + str(e), "danger")
+            print("Register Error:", e)
+            flash(f"Error: {e}", "danger")
 
     return render_template("register.html")
 
-# -------- LOGIN --------
+# -------- LOGIN (UPDATED) --------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -348,22 +442,45 @@ def login():
             return render_template("login.html")
 
         try:
-            # ✅ Authenticate with Firebase using Pyrebase
+            # 1. Authenticate with Firebase using Pyrebase
             user = pb_auth.sign_in_with_email_and_password(email, password)
 
-            # ✅ Get Firebase user record
+            # 2. Check if Email is Verified
+            account_info = pb_auth.get_account_info(user['idToken'])
+            is_verified = account_info['users'][0]['emailVerified']
+
+            if not is_verified:
+                flash("Please verify your email address first. Check your inbox (and spam folder).", "warning")
+                # Optional: You could offer to resend the email here if you want
+                return render_template("login.html")
+
+            # 3. Get Firebase user record for Flask-Login
             user_record = auth.get_user(user["localId"])
 
-            # Flask-Login user
+            # 4. Login User to Flask Session
             user_obj = User(uid=user_record.uid, email=user_record.email)
             login_user(user_obj)
+
+            # Update verified status in Firestore just to keep it synced
+            try:
+                db.collection("Users").document(user_record.uid).update({"email_verified": True})
+            except:
+                pass
 
             flash("Login successful!", "success")
             return redirect(url_for("maiscan"))
 
         except Exception as e:
             print("Login error:", e)
-            flash("Invalid email or password.", "danger")
+            error_msg = str(e)
+            if "INVALID_PASSWORD" in error_msg or "EMAIL_NOT_FOUND" in error_msg:
+                flash("Invalid email or password.", "danger")
+            elif "USER_DISABLED" in error_msg:
+                flash("This account has been disabled.", "danger")
+            elif "TOO_MANY_ATTEMPTS_TRY_LATER" in error_msg:
+                flash("Too many failed attempts. Please try again later.", "warning")
+            else:
+                flash("Login failed. Please try again.", "danger")
 
     return render_template("login.html")
 
@@ -408,30 +525,51 @@ def logout():
     flash("You have been logged out.", "success")
     return redirect(url_for("home"))
 
-# -------- UPDATE ACCOUNT --------
+# -------- UPDATE ACCOUNT (UPDATED) --------
 @app.route("/update-account", methods=["POST"])
 @login_required
 def update_account():
     username = request.form.get("username", "").strip()
-    email = request.form.get("email", "").strip()
+    # We usually don't update email simply to avoid re-verification issues, 
+    # but if you want to, you can keep the email logic.
     password = request.form.get("password", "").strip()
+    
+    # Address Fields
+    street = request.form.get("street", "").strip()
+    zip_code = request.form.get("zip_code", "").strip()
+    
+    # For dropdowns, only update if user selected something new
+    region = request.form.get("region_text", "").strip()
+    province = request.form.get("province_text", "").strip()
+    city = request.form.get("city_text", "").strip()
+    barangay = request.form.get("barangay_text", "").strip()
 
     try:
         updates = {}
+        
+        # 1. Update Basic Info
+        if username:
+            updates["username"] = username
+            updates["full_name"] = username # Keep these synced
 
-        # Update email
-        if email and email != current_user.email:
-            auth.update_user(current_user.id, email=email)
-            updates["email"] = email
-
-        # Update password
+        # 2. Update Password (Auth)
         if password:
             auth.update_user(current_user.id, password=password)
 
-        # Update Firestore user profile
-        if username:
-            updates["username"] = username
+        # 3. Update Address
+        # We only update specific address fields if they are not empty
+        current_address = current_user.address if current_user.address else {}
+        
+        if street: current_address["street"] = street
+        if zip_code: current_address["zip_code"] = zip_code
+        if region: current_address["region"] = region
+        if province: current_address["province"] = province
+        if city: current_address["city"] = city
+        if barangay: current_address["barangay"] = barangay
+        
+        updates["address"] = current_address
 
+        # 4. Save to Firestore
         if updates:
             db.collection("Users").document(current_user.id).update(updates)
 
@@ -441,6 +579,37 @@ def update_account():
         flash("Failed to update account: " + str(e), "danger")
 
     return redirect(url_for("maiscan"))
+
+# -------- DELETE ACCOUNT --------
+@app.route("/delete-account", methods=["POST"])
+@login_required
+def delete_account():
+    try:
+        user_id = current_user.id
+        
+        # 1. Delete User's Uploaded Images from Firestore
+        # (Optional: If you store actual files in cloud storage, delete them here too)
+        batch = db.batch()
+        uploads = db.collection("UploadedImages").where("user_id", "==", user_id).stream()
+        for doc in uploads:
+            batch.delete(doc.reference)
+        batch.commit()
+
+        # 2. Delete User Profile from Firestore
+        db.collection("Users").document(user_id).delete()
+
+        # 3. Delete User from Firebase Authentication
+        auth.delete_user(user_id)
+
+        # 4. Log out and cleanup
+        logout_user()
+        flash("Your account and all associated data have been permanently deleted.", "info")
+        return redirect(url_for("home"))
+
+    except Exception as e:
+        print(f"Delete Account Error: {e}")
+        flash("An error occurred while deleting your account. Please contact support.", "danger")
+        return redirect(url_for("maiscan"))
 
 # -------- GEMINI CHAT API --------
 @app.route("/api/chat", methods=["POST"])

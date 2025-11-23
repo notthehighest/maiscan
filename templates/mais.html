@@ -650,7 +650,7 @@
     <!-- Masthead-->
     <header class="masthead">
         <div class="container">
-            <div class="masthead-subheading">Welcome to</div>
+            <div class="masthead-subheading">Welcome {{ current_user.username }} to</div>
             <div class="masthead-heading text-uppercase">MAISCAN</div>
             <a class="btn btn-primary btn-xl text-uppercase" href="#scan">SCAN</a>
         </div>
@@ -2450,13 +2450,10 @@
     </div>
 </div>
 
-    <!-- Account Modal -->
-<!-- Account Modal -->
 <div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content shadow-lg border-0 rounded-3">
       
-      <!-- Header -->
       <div class="modal-header bg-warning text-dark border-0 rounded-top">
         <h5 class="modal-title fw-bold text-uppercase" id="accountModalLabel">
           <i class="fas fa-user-edit me-2"></i> Edit Account
@@ -2464,40 +2461,249 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       
-      <!-- Form -->
       <form id="accountForm" method="POST" action="{{ url_for('update_account') }}">
         <div class="modal-body p-4">
           
-          <!-- Username -->
-          <div class="mb-3">
-            <label for="username" class="form-label fw-semibold text-success">
-              <i class="fas fa-id-badge me-2"></i>Name
-            </label>
-            <input type="text" class="form-control border-success" 
-                   id="username" name="username" 
-                   value="{{ current_user.username or '' }}">
+          <div class="row g-3">
+            
+            <div class="col-12">
+                <h6 class="text-success fw-bold border-bottom pb-2 mb-3">
+                    <i class="fas fa-id-card me-2"></i>Personal Info
+                </h6>
+            </div>
+
+            <div class="col-md-6">
+                <label for="username" class="form-label fw-semibold text-success">Name</label>
+                <input type="text" class="form-control border-success" 
+                       id="username" name="username" 
+                       value="{{ current_user.username or '' }}">
+            </div>
+            
+            <div class="col-md-6">
+                <label for="email" class="form-label fw-semibold text-success">Email</label>
+                <input type="email" class="form-control border-success bg-light" 
+                       id="email" name="email" 
+                       value="{{ current_user.email }}" readonly>
+            </div>
+
+            <div class="col-12">
+                <label for="password" class="form-label fw-semibold text-success">New Password</label>
+                <input type="password" class="form-control border-success" 
+                       id="password" name="password" 
+                       placeholder="Leave blank to keep current password">
+            </div>
+
+            <div class="col-12 mt-4">
+                <h6 class="text-success fw-bold border-bottom pb-2 mb-3">
+                    <i class="fas fa-map-marked-alt me-2"></i>Update Address
+                </h6>
+                <p class="small text-muted mb-2 p-2 bg-light rounded border">
+                    <i class="fas fa-map-pin me-2 text-success"></i> <strong>Current:</strong> 
+                    {{ current_user.address.get('street', '') }} 
+                    {{ current_user.address.get('barangay', '') }} 
+                    {{ current_user.address.get('city', '') }}
+                    {{ current_user.address.get('province', '') }}
+                </p>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-success">Region</label>
+                <select id="edit_region" class="form-select border-success">
+                    <option value="" selected disabled>Select to change...</option>
+                </select>
+                <input type="hidden" name="region_text" id="edit_region_text">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-success">Province</label>
+                <select id="edit_province" class="form-select border-success" disabled>
+                    <option value="" selected disabled>Select Region first...</option>
+                </select>
+                <input type="hidden" name="province_text" id="edit_province_text">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-success">City/Municipality</label>
+                <select id="edit_city" class="form-select border-success" disabled>
+                    <option value="" selected disabled>Select Province first...</option>
+                </select>
+                <input type="hidden" name="city_text" id="edit_city_text">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-success">Barangay</label>
+                <select id="edit_barangay" class="form-select border-success" disabled>
+                    <option value="" selected disabled>Select City first...</option>
+                </select>
+                <input type="hidden" name="barangay_text" id="edit_barangay_text">
+            </div>
+
+            <div class="col-md-8">
+                <label for="edit_street" class="form-label fw-semibold text-success">Street/Purok</label>
+                <input type="text" class="form-control border-success" 
+                       id="edit_street" name="street" 
+                       value="{{ current_user.address.get('street', '') }}">
+            </div>
+
+            <div class="col-md-4">
+                <label for="edit_zip" class="form-label fw-semibold text-success">Zip Code</label>
+                <input type="text" class="form-control border-success" 
+                       id="edit_zip" name="zip_code" 
+                       value="{{ current_user.address.get('zip_code', '') }}">
+            </div>
+
+            <div class="col-12 mt-5 pt-3 border-top">
+                <h6 class="text-danger fw-bold mb-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
+                </h6>
+                <div class="p-3 bg-danger bg-opacity-10 border border-danger rounded d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong class="text-danger">Delete Account</strong>
+                        <p class="small text-danger mb-0">
+                            Permanently delete your account and all data.
+                        </p>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">
+                        <i class="fas fa-trash-alt me-2"></i>Delete
+                    </button>
+                </div>
+            </div>
+
           </div>
-          
-          <!-- Email -->
-          <div class="mb-3">
-            <label for="email" class="form-label fw-semibold text-success">
-              <i class="fas fa-envelope me-2"></i>Email
-            </label>
-            <input type="email" class="form-control border-success" 
-                   id="email" name="email" 
-                   value="{{ current_user.email }}">
-          </div>
-          
-          <!-- Password -->
-          <div class="mb-3">
-            <label for="password" class="form-label fw-semibold text-success">
-              <i class="fas fa-lock me-2"></i>New Password 
-              <small class="text-muted">(leave blank to keep current)</small>
-            </label>
-            <input type="password" class="form-control border-success" id="password" name="password">
-          </div>
-          
         </div>
+        
+        <div class="modal-footer border-0 bg-light rounded-bottom">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success fw-bold">
+                <i class="fas fa-save me-2"></i>Save Changes
+            </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-danger shadow-lg">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteConfirmationLabel">
+            <i class="fas fa-exclamation-circle me-2"></i>Confirm Deletion
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-4">
+        <div class="text-danger mb-3">
+            <i class="fas fa-trash-alt fa-4x"></i>
+        </div>
+        <h4 class="fw-bold text-danger">Are you sure?</h4>
+        <p class="text-muted">
+            This action cannot be undone. This will permanently delete your account, uploaded images, and all scan history.
+        </p>
+      </div>
+      <div class="modal-footer bg-light d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary px-4" data-bs-toggle="modal" data-bs-target="#accountModal">
+            Cancel
+        </button>
+        <button type="button" class="btn btn-danger px-4 fw-bold" onclick="document.getElementById('deleteAccountForm').submit()">
+            Yes, Delete Permanently
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form id="deleteAccountForm" action="{{ url_for('delete_account') }}" method="POST" style="display: none;">
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const api_base = 'https://psgc.gitlab.io/api';
+        
+        // --- Elements ---
+        const regionSelect = document.getElementById('edit_region');
+        const provinceSelect = document.getElementById('edit_province');
+        const citySelect = document.getElementById('edit_city');
+        const barangaySelect = document.getElementById('edit_barangay');
+        
+        // Hidden Inputs for Form Submission
+        const regionText = document.getElementById('edit_region_text');
+        const provinceText = document.getElementById('edit_province_text');
+        const cityText = document.getElementById('edit_city_text');
+        const barangayText = document.getElementById('edit_barangay_text');
+
+        // --- Helper Functions ---
+        function populate(select, data, placeholder) {
+            select.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
+            data.sort((a, b) => a.name.localeCompare(b.name));
+            data.forEach(item => {
+                let opt = document.createElement('option');
+                opt.value = item.code;
+                opt.text = item.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function toggle(el, enable) {
+            el.disabled = !enable;
+            if (!enable) el.innerHTML = '<option value="" disabled selected>Select...</option>';
+        }
+
+        // --- Logic ---
+        
+        // 1. Load Regions on Open
+        fetch(`${api_base}/regions/`)
+            .then(res => res.json())
+            .then(data => populate(regionSelect, data, "Select Region"))
+            .catch(e => console.error("API Error:", e));
+
+        // 2. Region Change
+        regionSelect.addEventListener('change', function() {
+            regionText.value = this.options[this.selectedIndex].text;
+            toggle(provinceSelect, false); toggle(citySelect, false); toggle(barangaySelect, false);
+            
+            const code = this.value;
+            if(code === '130000000') { // Special Logic for NCR
+                toggle(provinceSelect, false);
+                provinceText.value = "Metro Manila";
+                provinceSelect.innerHTML = '<option selected>Metro Manila</option>';
+                fetch(`${api_base}/regions/${code}/cities-municipalities/`)
+                    .then(res => res.json())
+                    .then(data => { populate(citySelect, data, "Select City"); toggle(citySelect, true); });
+            } else {
+                fetch(`${api_base}/regions/${code}/provinces/`)
+                    .then(res => res.json())
+                    .then(data => { populate(provinceSelect, data, "Select Province"); toggle(provinceSelect, true); });
+            }
+        });
+
+        // 3. Province Change
+        provinceSelect.addEventListener('change', function() {
+            if(this.value === 'NCR') return;
+            provinceText.value = this.options[this.selectedIndex].text;
+            toggle(citySelect, false); toggle(barangaySelect, false);
+            
+            fetch(`${api_base}/provinces/${this.value}/cities-municipalities/`)
+                .then(res => res.json())
+                .then(data => { populate(citySelect, data, "Select City"); toggle(citySelect, true); });
+        });
+
+        // 4. City Change
+        citySelect.addEventListener('change', function() {
+            cityText.value = this.options[this.selectedIndex].text;
+            toggle(barangaySelect, false);
+            
+            fetch(`${api_base}/cities-municipalities/${this.value}/barangays/`)
+                .then(res => res.json())
+                .then(data => { populate(barangaySelect, data, "Select Barangay"); toggle(barangaySelect, true); });
+        });
+
+        // 5. Barangay Change
+        barangaySelect.addEventListener('change', function() {
+            barangayText.value = this.options[this.selectedIndex].text;
+        });
+    });
+</script>
         
         <!-- Footer -->
         <div class="modal-footer border-0">
@@ -2521,14 +2727,14 @@
         <div class="chat-header">
             <div class="d-flex align-items-center">
                 <i class="fas fa-leaf me-2"></i>
-                <h5>MaisBot AI Assistant</h5>
+                <h5>Kernel</h5>
             </div>
             <button onclick="toggleChat()" class="btn btn-sm text-white"><i class="fas fa-times"></i></button>
         </div>
         <div class="chat-messages" id="chat-messages">
-            <div class="message bot">Hello! I'm MaisBot. Ask me anything about corn diseases or cultivation! 🌽</div>
+            <div class="message bot">Hello! I'm Kernel. Ask me anything about corn diseases or cultivation! 🌽</div>
         </div>
-        <div class="typing-indicator ps-3" id="typing-indicator">MaisBot is typing...</div>
+        <div class="typing-indicator ps-3" id="typing-indicator">Kernel is typing...</div>
         <div class="chat-input-area">
             <input type="text" id="chat-input" placeholder="Ask about corn..." onkeypress="handleEnter(event)">
             <button id="chat-send" onclick="sendMessage()">
