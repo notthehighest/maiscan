@@ -195,6 +195,22 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* Star Rating Styles */
+        .rating-stars i {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .rating-stars i.active {
+            color: #FFD600;
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .section-title { font-size: 2rem; }
+            .mobile-padding { padding-left: 1rem; padding-right: 1rem; }
+        }
     </style>
 </head>
 <body class="font-[Montserrat]">
@@ -254,7 +270,6 @@
 
     <!-- Hero Section -->
     <section id="home" class="min-h-screen flex flex-col justify-center items-center relative overflow-hidden pt-16">
-        <!-- Background elements -->
         <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
             <div class="absolute -top-40 -right-40 w-80 h-80 rounded-full gradient-bg opacity-20"></div>
             <div class="absolute -bottom-40 -left-40 w-80 h-80 rounded-full gradient-bg-yellow opacity-20"></div>
@@ -270,44 +285,20 @@
                 <p class="text-xl text-gray-700 mb-8">Advanced AI-powered solution for early corn disease detection and prevention. Maximize your yield with cutting-edge technology.</p>
                 <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                     <a href="{{ url_for('register') }}" class="btn-primary px-8 py-3 rounded-full font-semibold text-center">
-                        <i></i>Get Started
+                        Get Started
                     </a>
                     <a href="{{ url_for('login') }}" class="btn-secondary px-8 py-3 rounded-full font-semibold text-center">
-                        <i></i>Sign In
+                        Sign In
                     </a>
                 </div>
                 
-                <div class="mt-12 grid grid-cols-3 gap-6">
-                    <div class="text-center">
-                        <h3 class="text-3xl font-bold gradient-text">98%</h3>
-                        <p class="text-gray-600">Accuracy Rate</p>
-                    </div>
-                    <div class="text-center">
-                        <h3 class="text-3xl font-bold gradient-text">5000+</h3>
-                        <p class="text-gray-600">Farmers Served</p>
-                    </div>
-                    <div class="text-center">
-                        <h3 class="text-3xl font-bold gradient-text">24/7</h3>
-                        <p class="text-gray-600">Support</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="md:w-1/2 flex justify-center">
-                <div class="relative">
-                    <div class="glass-card p-6 rounded-2xl floating">
-                        <img src="https://images.unsplash.com/photo-1625246339666-38d955546ad7?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Corn Field" class="rounded-xl w-full max-w-md">
-                    </div>
-                    <div class="absolute -bottom-6 -right-6 glass-card p-4 rounded-xl shadow-lg">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center text-white">
-                                <i class="fas fa-leaf"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="font-semibold text-gray-800">Healthy Corn</p>
-                                <p class="text-sm text-gray-600">Detected by MAISCAN</p>
-                            </div>
+                <div class="mt-8 flex items-center bg-white/50 backdrop-blur-sm p-4 rounded-xl inline-block shadow-sm w-fit">
+                    <div class="text-3xl font-bold gradient-text mr-3">{{ avg_rating|default('5.0') }}</div>
+                    <div>
+                        <div class="flex text-yellow-400 text-sm">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                         </div>
+                        <p class="text-xs text-gray-600 font-semibold">{{ total_reviews|default('0') }}</p>
                     </div>
                 </div>
             </div>
@@ -323,7 +314,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div class="glass-card p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
                     <div class="feature-icon">
-                        <i class="fas fa-robot"></i>
+                        <i class="fas fa-leaf"></i>
                     </div>
                     <h3 class="text-2xl font-semibold text-center mb-4 gradient-text">AI-Powered Detection</h3>
                     <p class="text-gray-600 text-center">Our advanced machine learning algorithms accurately identify corn diseases from leaf images with 98% accuracy.</p>
@@ -361,12 +352,12 @@
                     <p class="text-gray-600 text-center">Track your corn health over time with our comprehensive history and comparison tools.</p>
                 </div>
                 
-                <div class="glass-card p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
+                <div class="glass-card p-8 rounded-2xl hover:shadow-xl transition-all duration-300 bg-white border-2 border-green-100">
                     <div class="feature-icon">
-                        <i class="fas fa-users"></i>
+                        <i class="fas fa-robot"></i>
                     </div>
-                    <h3 class="text-2xl font-semibold text-center mb-4 gradient-text">Expert Support</h3>
-                    <p class="text-gray-600 text-center">Our team of agricultural experts is available to help you interpret results and provide recommendations.</p>
+                    <h3 class="text-2xl font-semibold text-center mb-4 gradient-text">AI Corn Assistant</h3>
+                    <p class="text-gray-600 text-center">24/7 Smart Chatbot. Ask questions about fertilizers, crop care, or disease treatments and get instant answers.</p>
                 </div>
             </div>
         </div>
@@ -454,7 +445,6 @@
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Rust identification</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Leaf spot analysis</li>
                     </ul>
-                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
                 
                 <div class="glass-card p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
@@ -468,7 +458,6 @@
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Soil management</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Pesticide guidance</li>
                     </ul>
-                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
                 
                 <div class="glass-card p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
@@ -482,7 +471,6 @@
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Quality assessment</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Market readiness</li>
                     </ul>
-                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
                 
                 <div class="glass-card p-6 rounded-2xl hover:shadow-xl transition-all duration-300 text-center">
@@ -496,14 +484,13 @@
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Growth progress</li>
                         <li class="mb-2"><i class="fas fa-check text-green-500 mr-2"></i> Yield predictions</li>
                     </ul>
-                    <a href="#" class="text-green-600 font-semibold hover:text-green-800 transition-colors">Learn More <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
             </div>
             
             <div class="mt-16 glass-card p-8 rounded-2xl">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                     <div class="stat-card">
-                        <h3 class="text-4xl font-bold gradient-text mb-2">98%</h3>
+                        <h3 class="text-4xl font-bold gradient-text mb-2">92%</h3>
                         <p class="text-gray-600">Detection Accuracy</p>
                     </div>
                     <div class="stat-card">
@@ -566,6 +553,32 @@
                             <i class="fab fa-facebook-f"></i>
                         </a>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="vision" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div class="glass-card p-10 rounded-3xl border-l-8 border-green-500 shadow-lg transform hover:-translate-y-2 transition-transform duration-300 bg-green-50">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600 text-2xl">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold gradient-text mb-4">Our Mission</h3>
+                    <p class="text-gray-700 leading-relaxed text-lg">
+                        To empower corn farmers with accessible, high-tech AI solutions that detect crop diseases early, minimize yield loss, and promote sustainable agricultural practices for a food-secure future.
+                    </p>
+                </div>
+
+                <div class="glass-card p-10 rounded-3xl border-l-8 border-yellow-400 shadow-lg transform hover:-translate-y-2 transition-transform duration-300 bg-yellow-50">
+                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6 text-yellow-600 text-2xl">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold gradient-text-yellow mb-4">Our Vision</h3>
+                    <p class="text-gray-700 leading-relaxed text-lg">
+                        To be the leading innovator in agricultural technology in the Philippines, creating a resilient farming ecosystem where technology serves as the bridge between traditional farming and modern productivity.
+                    </p>
                 </div>
             </div>
         </div>
@@ -650,6 +663,73 @@
                 <a href="{{ url_for('register') }}" class="btn-secondary px-8 py-3 rounded-full font-semibold text-lg">
                     <i></i>Sign up for Free
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="feedback" class="py-20 gradient-bg relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-20 -mt-20"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-yellow-400 opacity-10 rounded-full -ml-20 -mb-20"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <h2 class="text-4xl font-bold text-center mb-4 text-white">Farmer Feedback</h2>
+            <p class="text-xl text-white text-center max-w-2xl mx-auto mb-12">Your experience matters. Rate our service and help us improve.</p>
+
+            <div class="flex flex-col lg:flex-row gap-12 items-stretch">
+                
+                <div class="w-full lg:w-5/12">
+                    <div class="glass-card bg-white p-8 rounded-2xl shadow-2xl h-full">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">Leave a Rating</h3>
+                        <form action="{{ url_for('submit_feedback') }}" method="POST">
+                            
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Your Name</label>
+                                <input type="text" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="Optional">
+                            </div>
+
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Rating</label>
+                                <div class="rating-stars flex text-3xl text-gray-300 cursor-pointer space-x-2">
+                                    <i class="fas fa-star hover:text-yellow-400 transition-colors" data-value="1"></i>
+                                    <i class="fas fa-star hover:text-yellow-400 transition-colors" data-value="2"></i>
+                                    <i class="fas fa-star hover:text-yellow-400 transition-colors" data-value="3"></i>
+                                    <i class="fas fa-star hover:text-yellow-400 transition-colors" data-value="4"></i>
+                                    <i class="fas fa-star hover:text-yellow-400 transition-colors" data-value="5"></i>
+                                </div>
+                                <input type="hidden" name="rating" id="ratingInput" value="5">
+                            </div>
+
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Message (Optional)</label>
+                                <textarea name="message" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="Any suggestions?"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full btn-secondary font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition-all">
+                                Submit Feedback
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="w-full lg:w-7/12 flex flex-col justify-center">
+                    <div class="glass-card bg-white/10 p-12 rounded-2xl flex flex-col items-center justify-center text-white text-center h-full border border-white/20">
+                        <div class="mb-2 uppercase tracking-widest text-sm font-semibold opacity-80">Overall Rating</div>
+                        
+                        <h3 class="text-7xl lg:text-8xl font-bold mb-6">{{ avg_rating|default('5.0') }}</h3>
+                        
+                        <div class="flex text-yellow-300 text-4xl mb-6 space-x-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i> </div>
+                        
+                        <div class="bg-white/20 px-6 py-2 rounded-full backdrop-blur-sm">
+                            <p class="text-lg font-medium">Based on <span class="font-bold">{{ total_reviews|default('0') }}</span> farmer reviews</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
@@ -754,6 +834,42 @@
                 }
             });
         });
+
+        // Star Rating Logic
+        const stars = document.querySelectorAll('.rating-stars i');
+        const ratingInput = document.getElementById('ratingInput');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                ratingInput.value = value;
+                updateStars(value);
+            });
+            
+            star.addEventListener('mouseover', function() {
+                const value = this.getAttribute('data-value');
+                updateStars(value);
+            });
+        });
+
+        document.querySelector('.rating-stars').addEventListener('mouseleave', function() {
+            updateStars(ratingInput.value);
+        });
+
+        function updateStars(value) {
+            stars.forEach(star => {
+                const starValue = star.getAttribute('data-value');
+                if (starValue <= value) {
+                    star.classList.add('active');
+                    star.classList.remove('text-gray-300');
+                    star.classList.add('text-yellow-400');
+                } else {
+                    star.classList.remove('active');
+                    star.classList.add('text-gray-300');
+                    star.classList.remove('text-yellow-400');
+                }
+            });
+        }
     </script>
 </body>
 </html>

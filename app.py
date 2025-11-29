@@ -340,9 +340,64 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ---------------- ROUTES ----------------
+# -------- HOME ROUTE (UPDATED) --------
 @app.route("/")
 def home():
-    return render_template("base.html")
+    # 1. Fetch Ratings for Average Calculation
+    try:
+        feedback_ref = db.collection("Feedbacks").stream()
+        ratings = []
+        feedbacks = []
+        
+        for doc in feedback_ref:
+            data = doc.to_dict()
+            if "rating" in data:
+                ratings.append(int(data["rating"]))
+            # Optional: Pass recent feedbacks to display
+            feedbacks.append(data)
+
+        if len(ratings) > 0:
+            avg_rating = round(sum(ratings) / len(ratings), 1)
+            total_reviews = len(ratings)
+        else:
+            avg_rating = 5.0 # Default if no ratings
+            total_reviews = 0
+            
+    except Exception as e:
+        print(f"Error fetching ratings: {e}")
+        avg_rating = 5.0
+        total_reviews = 0
+        feedbacks = []
+
+    return render_template("base.html", 
+                         avg_rating=avg_rating, 
+                         total_reviews=total_reviews,
+                         feedbacks=feedbacks[-3:]) # Show last 3 reviews
+
+# -------- SUBMIT FEEDBACK ROUTE (NEW) --------
+@app.route("/submit-feedback", methods=["POST"])
+def submit_feedback():
+    try:
+        name = request.form.get("name", "Anonymous")
+        rating = int(request.form.get("rating", 5))
+        message = request.form.get("message", "")
+        
+        feedback_data = {
+            "name": name,
+            "rating": rating,
+            "message": message,
+            "date": datetime.datetime.utcnow()
+        }
+        
+        # Save to Firestore
+        db.collection("Feedbacks").add(feedback_data)
+        
+        flash("Thank you for your feedback!", "success")
+    except Exception as e:
+        print(f"Feedback Error: {e}")
+        flash("Could not save feedback. Please try again.", "danger")
+        
+    return redirect(url_for("home") + "#feedback")
 
 @app.route("/debug")
 def debug():
@@ -362,12 +417,12 @@ def debug():
     })
 
 # -------- REGISTER (UPDATED) --------
+# -------- REGISTER (FIREBASE EMAIL LINK VERSION) --------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        # 1. Get Form Data
+        # 1. Get Data
         email = request.form.get("email", "").strip()
-        user_otp = request.form.get("otp_code", "").strip()
         password = request.form.get("password", "")
         full_name = request.form.get("full_name", "").strip()
         
@@ -382,51 +437,39 @@ def register():
             "country": "Philippines"
         }
 
-        # 2. VERIFY OTP
-        session_otp = session.get("verification_code")
-        session_email = session.get("verification_email")
-
-        if not session_otp or not session_email:
-            flash("Please click 'Send Code' to verify your email first.", "warning")
-            return render_template("register.html")
-        
-        if email != session_email:
-            flash("The email you entered does not match the one verified.", "danger")
-            return render_template("register.html")
-
-        if user_otp != session_otp:
-            flash("Invalid Verification Code.", "danger")
-            return render_template("register.html")
-
-        # 3. Create User (If OTP matches)
         try:
-            # Create in Auth (Email verified = True because they passed OTP)
-            user_record = auth.create_user(
-                email=email, 
-                password=password,
-                email_verified=True 
-            )
-
-            # Create in Firestore
-            db.collection("Users").document(user_record.uid).set({
+            # 2. Create User using Pyrebase (Client SDK)
+            # This allows us to get the idToken needed for sending the verification email
+            user = pb_auth.create_user_with_email_and_password(email, password)
+            
+            # 3. Send Verification Link
+            pb_auth.send_email_verification(user['idToken'])
+            
+            # 4. Save User Data to Firestore
+            # We use the localId (UID) returned by Pyrebase
+            user_uid = user['localId']
+            
+            db.collection("Users").document(user_uid).set({
                 "email": email,
                 "username": full_name,
                 "full_name": full_name,
                 "address": address_data,
-                "email_verified": True,
+                "email_verified": False, # False until they click the link
                 "created_at": datetime.datetime.utcnow()
             })
-            
-            # Clean session
-            session.pop('verification_code', None)
-            session.pop('verification_email', None)
 
-            flash("Account created successfully! Please login.", "success")
+            flash(f"Account created! We sent a verification link to {email}. Check your inbox or spam. Please verify before logging in.", "info")
             return redirect(url_for("login"))
 
         except Exception as e:
-            print("Register Error:", e)
-            flash(f"Error: {e}", "danger")
+            print("Registration Error:", e)
+            error_msg = str(e)
+            if "EMAIL_EXISTS" in error_msg:
+                flash("This email is already registered.", "danger")
+            elif "WEAK_PASSWORD" in error_msg:
+                flash("Password should be at least 6 characters.", "danger")
+            else:
+                flash("Registration failed. Please try again.", "danger")
 
     return render_template("register.html")
 
@@ -629,7 +672,7 @@ def chat_api():
         # Context engineering: Ensure the AI acts as a Corn Expert
         system_instruction = (
             "You are MaisBot, an expert agricultural assistant specializing ONLY in corn (maize) farming, "
-            "diseases (like rust, blight, leaf spot, etc.), and cultivation. "
+            "diseases (like rust, blight, leaf spot, etc.), pest, and cultivation. "
             "If the user asks about something unrelated to corn or agriculture, politely refuse and steer them back to corn. "
             "Keep your answers concise, helpful, and easy to understand for farmers."
         )

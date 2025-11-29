@@ -2458,12 +2458,16 @@
         <h5 class="modal-title fw-bold text-uppercase" id="accountModalLabel">
           <i class="fas fa-user-edit me-2"></i> Edit Account
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" id="btnCloseAccount" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       
-      <form id="accountForm" method="POST" action="{{ url_for('update_account') }}">
+      <form id="accountForm" method="POST" action="{{ url_for('update_account') }}" novalidate>
         <div class="modal-body p-4">
           
+          <div id="updateErrorAlert" class="alert alert-danger d-none" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> <span id="updateErrorMessage"></span>
+          </div>
+
           <div class="row g-3">
             
             <div class="col-12">
@@ -2476,7 +2480,7 @@
                 <label for="username" class="form-label fw-semibold text-success">Name</label>
                 <input type="text" class="form-control border-success" 
                        id="username" name="username" 
-                       value="{{ current_user.username or '' }}">
+                       value="{{ current_user.username or '' }}" required>
             </div>
             
             <div class="col-md-6">
@@ -2490,7 +2494,7 @@
                 <label for="password" class="form-label fw-semibold text-success">New Password</label>
                 <input type="password" class="form-control border-success" 
                        id="password" name="password" 
-                       placeholder="Leave blank to keep current password">
+                       placeholder="Leave blank to keep current password" minlength="6">
             </div>
 
             <div class="col-12 mt-4">
@@ -2573,8 +2577,8 @@
         </div>
         
         <div class="modal-footer border-0 bg-light rounded-bottom">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-success fw-bold">
+            <button type="button" id="btnCancelAccount" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="btnSaveChanges" class="btn btn-success fw-bold">
                 <i class="fas fa-save me-2"></i>Save Changes
             </button>
         </div>
@@ -2583,56 +2587,79 @@
   </div>
 </div>
 
-<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationLabel" aria-hidden="true">
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-danger shadow-lg">
       <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="deleteConfirmationLabel">
-            <i class="fas fa-exclamation-circle me-2"></i>Confirm Deletion
-        </h5>
+        <h5 class="modal-title"><i class="fas fa-exclamation-circle me-2"></i>Confirm Deletion</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body text-center p-4">
-        <div class="text-danger mb-3">
-            <i class="fas fa-trash-alt fa-4x"></i>
-        </div>
+        <div class="text-danger mb-3"><i class="fas fa-trash-alt fa-4x"></i></div>
         <h4 class="fw-bold text-danger">Are you sure?</h4>
-        <p class="text-muted">
-            This action cannot be undone. This will permanently delete your account, uploaded images, and all scan history.
-        </p>
+        <p class="text-muted">This action cannot be undone. All data will be lost.</p>
+        
+        <div class="mb-3 text-start">
+            <label class="form-label small fw-bold text-muted">Type <span class="text-danger">DELETE</span> to confirm:</label>
+            <input type="text" id="deleteInputCheck" class="form-control border-danger" placeholder="Type DELETE here">
+        </div>
       </div>
       <div class="modal-footer bg-light d-flex justify-content-center">
-        <button type="button" class="btn btn-secondary px-4" data-bs-toggle="modal" data-bs-target="#accountModal">
-            Cancel
-        </button>
-        <button type="button" class="btn btn-danger px-4 fw-bold" onclick="document.getElementById('deleteAccountForm').submit()">
-            Yes, Delete Permanently
-        </button>
+        <button type="button" class="btn btn-secondary px-4" data-bs-toggle="modal" data-bs-target="#accountModal">Cancel</button>
+        <button type="button" id="btnConfirmDelete" class="btn btn-danger px-4 fw-bold" disabled>Yes, Delete Permanently</button>
       </div>
     </div>
   </div>
 </div>
 
-<form id="deleteAccountForm" action="{{ url_for('delete_account') }}" method="POST" style="display: none;">
-</form>
+<div class="modal fade" id="saveConfirmationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="fas fa-save me-2"></i>Confirm Changes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-4">
+        <div class="text-success mb-3"><i class="fas fa-check-circle fa-4x"></i></div>
+        <h4 class="fw-bold text-success">Save these changes?</h4>
+        <p class="text-muted">Your account information will be updated.</p>
+      </div>
+      <div class="modal-footer bg-light d-flex justify-content-center">
+        
+        <button type="button" id="btnCancelSave" class="btn btn-secondary px-4">Cancel</button>
+        
+        <button type="button" id="confirmSaveBtn" class="btn btn-success px-4 fw-bold">Yes, Update Profile</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form id="deleteAccountForm" action="{{ url_for('delete_account') }}" method="POST" style="display: none;"></form>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const api_base = 'https://psgc.gitlab.io/api';
+        // --- A. FORCE CLOSE BUTTONS ---
+        const modalEl = document.getElementById('accountModal');
+        const forceClose = () => {
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if(modal) modal.hide();
+        };
+        document.getElementById('btnCancelAccount').addEventListener('click', forceClose);
+        document.getElementById('btnCloseAccount').addEventListener('click', forceClose);
+
+        // --- B. ADDRESS API LOGIC ---
+        const api_base = 'https://psgc.cloud/api'; 
         
-        // --- Elements ---
         const regionSelect = document.getElementById('edit_region');
         const provinceSelect = document.getElementById('edit_province');
         const citySelect = document.getElementById('edit_city');
         const barangaySelect = document.getElementById('edit_barangay');
         
-        // Hidden Inputs for Form Submission
         const regionText = document.getElementById('edit_region_text');
         const provinceText = document.getElementById('edit_province_text');
         const cityText = document.getElementById('edit_city_text');
         const barangayText = document.getElementById('edit_barangay_text');
 
-        // --- Helper Functions ---
         function populate(select, data, placeholder) {
             select.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
             data.sort((a, b) => a.name.localeCompare(b.name));
@@ -2649,64 +2676,155 @@
             if (!enable) el.innerHTML = '<option value="" disabled selected>Select...</option>';
         }
 
-        // --- Logic ---
-        
-        // 1. Load Regions on Open
-        fetch(`${api_base}/regions/`)
+        // Load Regions
+        fetch(`${api_base}/regions`)
             .then(res => res.json())
             .then(data => populate(regionSelect, data, "Select Region"))
             .catch(e => console.error("API Error:", e));
 
-        // 2. Region Change
+        // Region Change
         regionSelect.addEventListener('change', function() {
             regionText.value = this.options[this.selectedIndex].text;
             toggle(provinceSelect, false); toggle(citySelect, false); toggle(barangaySelect, false);
             
             const code = this.value;
-            if(code === '130000000') { // Special Logic for NCR
+            if(code === '130000000') { // NCR
                 toggle(provinceSelect, false);
-                provinceText.value = "Metro Manila";
+                document.getElementById('edit_province_text').value = "Metro Manila";
                 provinceSelect.innerHTML = '<option selected>Metro Manila</option>';
-                fetch(`${api_base}/regions/${code}/cities-municipalities/`)
+                fetch(`${api_base}/regions/${code}/cities-municipalities`)
                     .then(res => res.json())
                     .then(data => { populate(citySelect, data, "Select City"); toggle(citySelect, true); });
             } else {
-                fetch(`${api_base}/regions/${code}/provinces/`)
+                fetch(`${api_base}/regions/${code}/provinces`)
                     .then(res => res.json())
                     .then(data => { populate(provinceSelect, data, "Select Province"); toggle(provinceSelect, true); });
             }
         });
 
-        // 3. Province Change
+        // Province Change
         provinceSelect.addEventListener('change', function() {
             if(this.value === 'NCR') return;
             provinceText.value = this.options[this.selectedIndex].text;
             toggle(citySelect, false); toggle(barangaySelect, false);
-            
-            fetch(`${api_base}/provinces/${this.value}/cities-municipalities/`)
+            fetch(`${api_base}/provinces/${this.value}/cities-municipalities`)
                 .then(res => res.json())
                 .then(data => { populate(citySelect, data, "Select City"); toggle(citySelect, true); });
         });
 
-        // 4. City Change
+        // City Change
         citySelect.addEventListener('change', function() {
             cityText.value = this.options[this.selectedIndex].text;
             toggle(barangaySelect, false);
-            
-            fetch(`${api_base}/cities-municipalities/${this.value}/barangays/`)
+            fetch(`${api_base}/cities-municipalities/${this.value}/barangays`)
                 .then(res => res.json())
                 .then(data => { populate(barangaySelect, data, "Select Barangay"); toggle(barangaySelect, true); });
         });
 
-        // 5. Barangay Change
+        // Barangay Change
         barangaySelect.addEventListener('change', function() {
             barangayText.value = this.options[this.selectedIndex].text;
         });
-    });
-</script>
+
+        // --- C. SAVE CONFIRMATION LOGIC ---
+        const accountForm = document.getElementById('accountForm');
+        const saveBtn = document.getElementById('btnSaveChanges'); // The "Save Changes" on Edit Modal
+        const confirmSaveBtn = document.getElementById('confirmSaveBtn'); // The "Yes" on Confirm Modal
+        const btnCancelSave = document.getElementById('btnCancelSave'); // The "Cancel" on Confirm Modal
+        const errorAlert = document.getElementById('updateErrorAlert');
+        const errorMessage = document.getElementById('updateErrorMessage');
         
+        let saveModalInstance = null;
+
+        // 1. Intercept the Form Submit
+        accountForm.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            let isValid = true;
+            let errorText = "";
+
+            if (!this.checkValidity()) {
+                e.stopPropagation();
+                isValid = false;
+                errorText = "Please fill in all required fields.";
+            }
+
+            if (regionSelect.value && regionSelect.value !== "") {
+                if (regionSelect.value !== '130000000' && (!provinceSelect.value || provinceSelect.value === "")) {
+                    isValid = false; errorText = "Please select a Province."; provinceSelect.classList.add('is-invalid');
+                } else { provinceSelect.classList.remove('is-invalid'); }
+
+                if (!citySelect.value || citySelect.value === "") {
+                    isValid = false; errorText = "Please select a City."; citySelect.classList.add('is-invalid');
+                } else { citySelect.classList.remove('is-invalid'); }
+
+                if (!barangaySelect.value || barangaySelect.value === "") {
+                    isValid = false; errorText = "Please select a Barangay."; barangaySelect.classList.add('is-invalid');
+                } else { barangaySelect.classList.remove('is-invalid'); }
+            }
+
+            this.classList.add('was-validated');
+
+            if (!isValid) {
+                errorAlert.classList.remove('d-none');
+                errorMessage.textContent = errorText;
+            } else {
+                errorAlert.classList.add('d-none');
+                
+                // Show Loading Spinner on the Edit Modal button while we ask for confirmation
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Verifying...';
+
+                // Open Confirmation Modal
+                saveModalInstance = new bootstrap.Modal(document.getElementById('saveConfirmationModal'));
+                saveModalInstance.show();
+            }
+        });
+
+        // 2. Handle "Yes, Update Profile"
+        confirmSaveBtn.addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+            this.disabled = true;
+            accountForm.submit(); 
+        });
+
+        // 3. Handle "Cancel" (Fixes the stuck button issue)
+        btnCancelSave.addEventListener('click', function() {
+            // Hide the confirmation modal
+            if(saveModalInstance) saveModalInstance.hide();
+
+            // RESET the "Save Changes" button on the Edit Modal
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save Changes';
+        });
+
+        // --- D. DELETE CONFIRMATION LOGIC ---
+        const deleteInput = document.getElementById('deleteInputCheck');
+        const deleteBtn = document.getElementById('btnConfirmDelete');
+        const deleteForm = document.getElementById('deleteAccountForm');
+
+        deleteInput.addEventListener('keyup', function() {
+            if (this.value === 'DELETE') {
+                deleteBtn.disabled = false;
+                this.classList.remove('is-invalid'); this.classList.add('is-valid');
+            } else {
+                deleteBtn.disabled = true;
+                if(this.value.length > 0 && !"DELETE".startsWith(this.value)) {
+                     this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid'); this.classList.remove('is-valid');
+                }
+            }
+        });
+
+        deleteBtn.addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+            this.disabled = true;
+            deleteForm.submit();
+        });
+    });
+</script>       
         <!-- Footer -->
-        <div class="modal-footer border-0">
+        <!-- <div class="modal-footer border-0">
           <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
             <i class="fas fa-times me-2"></i>Cancel
           </button>
@@ -2717,7 +2835,7 @@
       </form>
     </div>
   </div>
-</div>
+</div> -->
 
 <button id="chat-launcher" onclick="toggleChat()">
         <i class="fas fa-robot"></i>
